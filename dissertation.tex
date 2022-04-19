@@ -399,8 +399,7 @@ representation of a single metrical cycle.
 
 The first approach was to use a simple list of integers to represent a metre,
 where each integer corresponds to a beat, and the value of each integer is the
-number of units at the next level it is divided into (as used by Mark Gotham
-[Gotham2015]). For example, [3,3,2,2] represents a metre where the first two
+number of units at the next level it is divided into (as used by Mark Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
 beats are subdivided into three, and the second two beats are subdivided into
 two. For lower metrical levels (two or more subdivisions of the beat level), it
 was assumed that they divide into two.
@@ -416,13 +415,13 @@ of a tree structure, as this captures the full hierarchy more easily.
 A tree data structure was chosen as a more descriptive representation for the
 hierarchy information within a metre. This is a common way to depict metre;
 Forth provides a detailed mathematical treatment of trees used in this context
-[Forth2012]. To ensure an implementation that works well as part of a
+\cite{forth2012}. To ensure an implementation that works well as part of a
 programming language, I used the popular \verb'music21' Python library as a basis for
-designing my representation [Ariza2010].
+designing my representation \cite{ariza2010}.
 
 The tree structure is implemented by the MetreLeaf and MetreTree classes (see
-SUBSECTIONS for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default nesting of these objects
-for a 4/4 time signature, and each object's duration. Note the duration of a
+Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default nesting of these objects
+for a \setmetre{4}{4} time signature, and each object's duration. Note the duration of a
 parent node is the sum of the durations of its children.
 
 \begin{figure}
@@ -596,7 +595,7 @@ which the offset occurs exactly on. For the example shown in Figure~\ref{fig:met
 occurs on the first event of all three levels, so the function would return $[0 \Rightarrow 0,1 \Rightarrow 0,2 \Rightarrow 0]$ (a Hash from level to index). Offset $y$ occurs only on the last event of
 level 2, so the function would return $[2 \Rightarrow 7]$. This method is important because it
 is used later to determine which micro-timing probability distributions should
-be applied to a note at a given offset (see SECTION).
+be applied to a note at a given offset (see Section~\ref{applying_micro-timing}).
 
 \begin{figure}[ht]
     \centering
@@ -801,7 +800,7 @@ I have also implemented some shorthand commands such as \verb'add_quarter' and
 \verb'add_whole' which act as wrappers around calls to \verb'add_note'. This was done to
 provide an easy-to-use alternative to the metrical level notation for users who
 are less familiar with Western music theory. This was especially important as
-Sonic Pi was designed to be accessible to primary school children [Aaron2013].
+Sonic Pi was designed to be accessible to primary school children \cite{aaron2013}.
 
 The final two sound commands are \verb'add_sample' and \verb'add_rest'. These function the
 same as \verb'add_note' except \verb'add_sample' plays an audio sample and \verb'add_rest' simply sleeps.
@@ -828,11 +827,11 @@ accept any distribution object which has a sample method.
 
 The NormalDistribution class is initialised with a mean and standard deviation
 and has a method for generating random samples. Samples are generated using the
-Box-Muller transform [Box1958], which transforms a pair of uniform random
+Box-Muller transform \cite{box1958}, which transforms a pair of uniform random
 samples into a pair of normally distributed samples. Sonic Pi's random number
 generator is used for the uniform random samples because this generates a
 deterministic, repeatable sequence of random numbers, which means the output of
-a Sonic Pi program sounds the same each time it is run [Aaron2016].
+a Sonic Pi program sounds the same each time it is run \cite{aaron2016}.
 
 The class has a test to see if the style is compatible with a given metrical
 hierarchy. A Style is defined as being compatible with a MetreTree if, for each
