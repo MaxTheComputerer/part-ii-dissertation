@@ -50,7 +50,7 @@
             $\scriptstyle#1$\cr
             \noalign{\vskip1pt}
             $\scriptstyle#2$\cr}
-  }}
+  }}\!
 }
 
 \definecolor{SPpink}{RGB}{255,20,147}
@@ -369,11 +369,11 @@ metres with both simple and complex hierarchies.
 
 The implementation of this project consists of a few main components.
 
-The first is the implementation of the micro-timing functionality into Sonic Pi.
+The first is the addition of the micro-timing functionality into Sonic Pi.
 This consists of an implementation of musical metre, new commands to play music
 within a metrical context, the style-specific micro-timing itself, and a method
 of multi-threaded synchronisation. The second main component is the data
-analysis which is required to generate realistic micro-timing for musical styles.
+analysis which is used to generate realistic micro-timing for musical styles.
 This is done primarily for Malian jembe, but also for Viennese waltz in
 preparation for the evaluation. The final component is a pair of converters
 between the MusicXML file format and my extended Sonic Pi language, also
@@ -399,7 +399,7 @@ representation of a single metrical cycle.
 
 The first approach was to use a simple list of integers to represent a metre,
 where each integer corresponds to a beat, and the value of each integer is the
-number of units at the next level it is divided into (as used by Mark Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
+number of pulses that beat is divided into (as used by Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
 beats are subdivided into three, and the second two beats are subdivided into
 two. For lower metrical levels (two or more subdivisions of the beat level), it
 was assumed that they divide into two.
@@ -424,7 +424,7 @@ Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:
 for a \setmetre{4}{4} time signature, and each object's duration. Note the duration of a
 parent node is the sum of the durations of its children.
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \resizebox{\linewidth}{!}{
         \begin{forest}
@@ -463,14 +463,14 @@ MetreLeaf in the metre. This is expressed as a fraction of a whole note. For
 example, a leaf node with the duration of a quarter note (also known as a
 crotchet) will have the value $\frac{1}{4}$.
 
-The class contains a subdivide method, which divides the MetreLeaf by two a
+The class contains a \verb'subdivide()' method, which divides the MetreLeaf by two a
 given number of times, $s$. It returns a new MetreTree with $2^s$ MetreLeaf children, each of value $f/2^s$ where $f$ is the fraction of the original MetreLeaf.
 
 
 \subsection{MetreTree class} \label{metretree}
 
 A MetreTree object represents the hierarchical tree or subtree of a metre. The
-instance variable sequence is an ordered list containing any combination of
+instance variable \verb'sequence' is an ordered list containing any combination of
 MetreLeaf and other MetreTree objects representing this node's children. For
 example, the previous example hierarchy in Figure~\ref{fig:tree_object_hierarchy} could also be written in list form as:
 \[\left[\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right]\right]\]
@@ -482,17 +482,17 @@ detail below.
 
 \subsubsection{Getting metrical levels} \label{get_level}
 
-The first commonly used method is \verb'get_level', which returns a flat MetreTree at
+The first commonly used method is \verb'get_level()', which returns a flat MetreTree at
 a given metrical level $l$. A flat MetreTree is defined as one whose children are
 only MetreLeafs, meaning there is no hierarchy (e.g.\ $\left[\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8}\right]$).
 
 This method is split into two algorithms:
 \begin{itemize}
-    \item \verb'get_division_level' computes the sequence for division levels ($l>0$), and the beat level ($l=0$)
-	\item \verb'get_multiple_level' estimates a possible sequence for multiple levels ($l<0$)
+    \item \verb'get_division_level()' computes the sequence for division levels ($l>0$), and the beat level ($l=0$)
+	\item \verb'get_multiple_level()' estimates a possible sequence for multiple levels ($l<0$)
 \end{itemize}
 
-Algorithm~\ref{alg:getDivisionLevel} shows the \verb'get_division_level' algorithm. For each child in the
+Algorithm~\ref{alg:getDivisionLevel} shows the \verb'get_division_level()' algorithm. For each child in the
 sequence list, if it is a MetreTree, the method is recursively called until the
 base case of $l=0$ is reached. At this point, all the children of that node are
 combined into one MetreLeaf equal to the sum of their durations. If the child is
@@ -534,14 +534,14 @@ level.
             }
         }
     }
-    \Return{new \MetreTree from \NewSequence}
+    \Return{new \MetreTree made from \NewSequence}
     \label{alg:getDivisionLevel}
 \end{algorithm}
 
-The \verb'get_multiple_level' algorithm performs an estimate of the structure of
+The \verb'get_multiple_level()' algorithm performs an estimate of the structure of
 higher metrical levels. It is an estimate because this information is not in the
 MetreTree's representation of the metre. The algorithm finds the new sequence
-length (number of children) by dividing the length by its smallest prime factor.
+length (number of children of the root) by dividing the length by its smallest prime factor.
 This is repeated until the target level $l$ is reached. For example, if the
 current MetreTree has six children, this is divided by its smallest prime factor
 (two) to get a \verb'new_length' of three. If another level higher is needed, the
@@ -549,13 +549,13 @@ process iterates to get a \verb'new_length' of $3\div3=1$. The MetreTree's
 hierarchy is then partitioned into a \verb'new_length' number of equally sized
 MetreLeafs.
 
-An important consideration when implementing the \verb'get_level' method was to
+An important consideration when implementing the \verb'get_level()' method was to
 maximise its efficiency, because it is called at least once per note. The
 running time of the algorithm is proportional to the number of MetreLeafs in the
 hierarchy, so to improve this I implemented a cache of metrical levels for each
-MetreTree object to store the expensive computations for reuse later.
+MetreTree object to store the expensive computations for reuse.
 
-Some examples of the output of \verb'get_level' for the hierarchy below are shown in Table~\ref{table:get_level}:
+Some examples of the output of \verb'get_level()' for the following hierarchy are shown in Table~\ref{table:get_level}:
 \[
     \left[
         \left[\frac{1}{8},\frac{1}{8}\right],
@@ -589,9 +589,9 @@ Some examples of the output of \verb'get_level' for the hierarchy below are show
 
 \subsubsection{Getting exact metrical events} \label{metrical_level_indices}
 
-The second key method in the MetreTree class is \verb'metrical_level_indices'. For a
-given offset into the metric cycle, the algorithm finds any metrical events
-which the offset occurs exactly on. For the example shown in Figure~\ref{fig:metrical_level_indices_example}, offset $x$
+The second key method in the MetreTree class is \verb'metrical_level_indices()'. For a
+given offset into the metric cycle, this algorithm finds any metrical events
+which the offset occurs exactly on, and returns their index. For the example shown in Figure~\ref{fig:metrical_level_indices_example}, offset $x$
 occurs on the first event of all three levels, so the function would return $[0 \Rightarrow 0,1 \Rightarrow 0,2 \Rightarrow 0]$ (a Hash from level to index). Offset $y$ occurs only on the last event of
 level 2, so the function would return $[2 \Rightarrow 7]$. This method is important because it
 is used later to determine which micro-timing probability distributions should
@@ -657,14 +657,14 @@ hierarchy stored in a MetreTree. It implements functionality allowing a user to
 specify a metre by a time signature string (e.g.\ \verb|`4/4'|) for common metres, or a
 nested list of Rationals representing the hierarchy. It also has a method which
 converts a duration in quarter lengths (the length of one quarter note) to Sonic
-Pi beats, for when the length of a beat in the metre is not one quarter length.
+Pi beats.
 
 
 \subsection{Bar class} \label{bar_class}
 
-A bar (or measure) is a common term for a single metric cycle used in Western
-music theory. The Bar class is a representation of this, and each instance of it
-has an associated metre. A Bar is responsible for:
+A bar (or measure) is a common term used in Western music theory for a single
+metric cycle. The Bar class is a representation of this, and each instance of it
+has an associated metre. A Bar object is responsible for:
 \begin{itemize}
 	\item Keeping track of the playback position through the cycle
 	\item Converting a note duration given as a metrical level and a count into
@@ -676,8 +676,9 @@ updating the bar's playback position accordingly
 A note duration is specified as a metrical level and a duration. The duration
 is in units of an event at the specified metrical level, so acts as a multiplier.
 For example, a note with level 0 and duration 3 will last for 3 beats. The
-\verb'add_note' method handles checking if a note fits into the bar, as shown in
-Algorithm~\ref{alg:add_note}.
+\verb'add_note()' method handles checking if a note fits into the bar, as shown in
+Algorithm~\ref{alg:add_note}. If a note can't fit into the bar's remaining time,
+an exception is raised. This ensures the bar obeys the duration of its metre.
 
 \begin{algorithm}
     \SetKwData{NewOffset}{newOffset}
@@ -712,7 +713,7 @@ Algorithm~\ref{alg:add_note}.
 
 Now that the framework of musical metre has been established, we can look at how
 this is used by the user to play music. I will describe the new Sonic Pi
-commands I've implemented for controlling metre and adding notes and rests.
+commands I've implemented for controlling metre, and adding notes and rests.
 Figure~\ref{fig:sonicpi_language_comparison} shows a comparison between the original Sonic Pi commands (left), my
 alternative commands (centre), and traditional Western music notation (right)
 for a single bar of \setmetre{4}{4}.
@@ -767,9 +768,9 @@ A metre is created with the \verb'use_metre' or \verb'with_metre' commands. Thes
 designed to match the syntax of existing Sonic Pi commands such as \verb'use_fx' and \verb'with_fx'.
 
 \begin{itemize}
-	\item \verb'use_metre(m)' sets the metre to m in the thread local variables
-	\item \verb'with_metre(m) do ... end' executes a block of user code with a
-specified metre, then restores the original metre
+	\item \verb'use_metre('$m$\verb')' changes the current thread's metre to $m$ (using a thread local variable)
+	\item \verb'with_metre('$m$\verb') do ... end' executes a block of user code with a
+specified metre $m$, then restores the thread's original metre
 \end{itemize}
 
 The \verb'bar do ... end' command creates a new Bar object, stores this to a
@@ -782,17 +783,16 @@ the appropriate time.
 
 There are three main sound commands: \verb'add_note', \verb'add_sample', and \verb'add_rest'. A
 user can use \verb'add_note' to play a note on the current synthesiser. A note is
-defined as a pitch (how high or low it sounds) and a duration. The pitch is
+defined as a pitch (how high or low it sounds) and a length. The pitch is
 specified as in Sonic Pi's \verb'play' command, such as by a note name and octave (C4)
 or a MIDI note (60). A list of pitches will sound together as a chord. The
-duration is given as a metrical level and a length in units of an event at that
-level, as defined in Section~\ref{bar_class}.
+length is given as a metrical level and a duration, as defined in Section~\ref{bar_class}.
 
 The \verb'add_note' command works as follows:
 \begin{enumerate}
-    \item Gets the current Bar object from the thread local variable store
-    \item Calls the Bar's \verb'add_note' method to check if the note will fit into the current bar
-    \item Passes the note pitch to Sonic Pi's play function which creates the sound
+    \item Gets the current Bar object from the thread local variables
+    \item Calls the Bar's \verb'add_note()' method to check if the note will fit into the current bar
+    \item Passes the note pitch to Sonic Pi's \verb'play' function which creates the sound
     \item Sleeps for the duration of the note
 \end{enumerate}
 
@@ -800,10 +800,10 @@ I have also implemented some shorthand commands such as \verb'add_quarter' and
 \verb'add_whole' which act as wrappers around calls to \verb'add_note'. This was done to
 provide an easy-to-use alternative to the metrical level notation for users who
 are less familiar with Western music theory. This was especially important as
-Sonic Pi was designed to be accessible to primary school children \cite{aaron2013}.
+Sonic Pi was designed to be accessible to schoolchildren \cite{aaron2013}.
 
 The final two sound commands are \verb'add_sample' and \verb'add_rest'. These function the
-same as \verb'add_note' except \verb'add_sample' plays an audio sample and \verb'add_rest' simply sleeps.
+same as \verb'add_note', except \verb'add_sample' plays an audio sample and \verb'add_rest' simply sleeps.
 
 
 
@@ -812,8 +812,8 @@ same as \verb'add_note' except \verb'add_sample' plays an audio sample and \verb
 In order to add micro-timing functionality to my implementation, I first needed
 a way of representing and storing the micro-timing information for different
 musical styles. This information is represented by probability distributions for
-each event in a metric cycle describing how early or late each event should
-occur relative to the metrical grid. In this section, I will describe how the
+each event in a metric cycle, describing how early or late each event should
+occur. In this section, I will describe how the
 Style class stores the micro-timing information for a musical style, and how
 this is used to apply micro-timing to a user's music.
 
@@ -822,21 +822,40 @@ this is used to apply micro-timing to a user's music.
 
 The Style class stores micro-timing values as a Hash from metrical levels (0, 1,
 etc.) to lists containing one probability distribution object for each event at
-that level. I have implemented a class for a normal distribution, but Style will
-accept any distribution object which has a sample method.
+that level. It will accept any distribution object which has a \verb'sample()' method,
+such as my NormalDistribution class described below.
 
-The NormalDistribution class is initialised with a mean and standard deviation
-and has a method for generating random samples. Samples are generated using the
-Box-Muller transform \cite{box1958}, which transforms a pair of uniform random
-samples into a pair of normally distributed samples. Sonic Pi's random number
-generator is used for the uniform random samples because this generates a
-deterministic, repeatable sequence of random numbers, which means the output of
-a Sonic Pi program sounds the same each time it is run \cite{aaron2016}.
+For example, a Style object with the Hash shown below defines micro-timing only for metrical level
+$l=0$ (the beat level) for a metre with three beats. The first beat is played exactly on time,
+with no variance. The second beat is early, with normal distribution $(\mu,\sigma)=(-0.3,0.01)$.
+The third beat is very slightly late, with normal distribution $(\mu,\sigma)=(0.001,0)$.
 
-The class has a test to see if the style is compatible with a given metrical
+\begin{verbatim}
+{
+    0 => [
+        NormalDistribution.new(0,0),
+        NormalDistribution.new(-0.3, 0.01),
+        NormalDistribution.new(0.001,0)
+    ]
+}
+\end{verbatim}
+
+The class also has a test to see if the style is compatible with a given metrical
 hierarchy. A Style is defined as being compatible with a MetreTree if, for each
 metrical level defined in the Style, it has exactly one distribution for each
 metric event at that level in the MetreTree.
+
+\subsubsection{NormalDistribution class} \label{normal_distribution}
+
+I have implemented a NormalDistribution class, which is initialised with a mean $\mu$ and standard deviation
+$\sigma$, and has a method for generating random samples.
+
+Samples are generated using the
+Box-Muller transform \cite{box1958}, which transforms a pair of uniform random
+samples into a pair of normally distributed samples. Sonic Pi's random number
+generator is used for the uniform random samples. This is because it generates a
+deterministic, repeatable sequence of pseudorandom numbers, which means the output of
+a Sonic Pi program sounds the same each time it is run \cite{aaron2016}.
 
 
 \subsection{Applying micro-timing} \label{applying_micro-timing}
@@ -844,22 +863,32 @@ metric event at that level in the MetreTree.
 When a user sets a metre with the \verb'use_metre' or \verb'with_metre' commands, they can
 specify an optional second argument as either a Style object or the name of a
 style to be looked up. This causes all music played with that metre to use the
-micro-timing of the given style.
+micro-timing of the chosen style.
 
 At the start of each new bar, the Metre object samples new values from the
-Style's probability distributions. When a note is played in the bar, the
+Style's probability distributions. When a note is played inside the bar, the
 \verb'add_note' command requests the timing shift that should be applied to the note
 from the Metre. To calculate this, the Metre object calls its
-\verb'metrical_level_indices' method (see Section~\ref{metrical_level_indices}) to determine which timing
-values from each level to use. These timings are summed to include the
-contributions of each metrical level to produce an overall timing shift for the
+\verb'metrical_level_indices()' method (see Section~\ref{metrical_level_indices}) to determine which timing
+values from each level to use. The individual timing contributions of each
+metrical level are summed to produce an overall timing shift for the
 note. A positive value means the note should be played slightly late; a negative
 value means slightly early. This is returned to \verb'add_note' which then uses Sonic Pi's \verb'time_warp' function to adjust the timing of the call to \verb'play'.
 
-For example, if the sampled timings for each level are
+For example, if the sampled timings for each level are:
 \[ T=[0\Rightarrow[0,0.1],1\Rightarrow[0.03,0,0,-0.02]] \]
-and the metrical level indices are $L=[0\Rightarrow1,1\Rightarrow3]$, then the timing shift would be calculated as
-\[ t=T[0][L[0]]+T[1][L[1]]=0.1+(-0.02)=0.08 \]
+and the metrical level indices are $L=[0\Rightarrow1,1\Rightarrow3]$, then the timing shift would be
+calculated by Equation~\ref{eq:micro-timing_sum_example}:
+
+\begin{equation}
+    \begin{split}
+        t &= \sum_{i=0}^n T[i][L[i]] \\
+        &=T[0][L[0]]+T[1][L[1]] \\
+        &=0.1+(-0.02) \\
+        &=0.08
+    \end{split}
+    \label{eq:micro-timing_sum_example}
+\end{equation}
 Therefore, the note will be played 0.08 quarter lengths late.
 
 
@@ -869,8 +898,8 @@ Therefore, the note will be played 0.08 quarter lengths late.
 An important part of producing music in Sonic Pi is the ability to have multiple
 instruments/parts playing simultaneously. This is accomplished by having
 separate threads of execution. Aaron et al.'s previous work on Sonic Pi's
-temporal semantics [Aaron2014] ensures music in separate threads remains in time.
-Because of the probabilistic nature of my implementation of micro-timing, each
+temporal semantics \cite{aaron2014} ensures music in separate threads remains in time.
+Because of the probabilistic nature of my micro-timing implementation, each
 thread needs to have the same set of randomly generated timing values to remain
 perfectly synchronised. Otherwise, notes in different threads that are supposed
 to sound at the same moment might not do so. To tackle this, I implemented a
@@ -882,7 +911,7 @@ per bar.
 
 The SynchronisedMetre class is a subclass of Metre which is designed to control
 the synchronisation of all the notes contained in the metre. Its main functions,
-in addition to those of the Metre class, are:
+in addition to those of the Metre class, are to:
 \begin{itemize}
 	\item Set a Style to use for generating micro-timing values
 	\item Sample from the Style's probability distributions to get timing values
@@ -894,7 +923,7 @@ in addition to those of the Metre class, are:
 \subsection{Bar number synchronisation} \label{bar_number_synchronisation}
 
 To make sure Bar objects in separate threads all have the same micro-timing
-values, and that these values are regenerated exactly once per cycle, we
+values, and that these values are regenerated exactly once per cycle, I
 synchronise the Bars on the current `bar number'. This is a counter of the
 number of bars that have occurred since the beginning of playback. The behaviour
 of the Bar class is as follows:
@@ -916,8 +945,8 @@ end
 
 If this is the first bar in the thread, the Bar object will request bar number 0
 from the metre, otherwise it will request the next bar number in sequence. The
-metre returns the actual current bar number, which is then stored for the next
-bar to use.
+metre returns the actual current bar number, which is then stored in the thread
+for the next bar to use.
 
 \begin{alltt}
 class SynchronisedMetre < Metre
@@ -940,7 +969,7 @@ class SynchronisedMetre < Metre
 end
 \end{alltt}
 
-The SynchronisedMetre's \verb'request_bar' method determines the correct current bar
+The SynchronisedMetre's \verb'request_bar()' method determines the correct current bar
 number. If the requested number is greater than its internal current number,
 then it must be the start of a new bar. So, the timings are recalculated, and
 its current bar number is updated. If the requested number is old, then it just
@@ -993,7 +1022,7 @@ characterise a style of music. Therefore, these distributions must be derived
 from real-life examples of music. The next two sections describe the data
 collection and analysis that was done for the jembe and Viennese waltz styles.
 The results of the data analysis methods described here can be found in
-SUBSECTION.
+Section TODO.
 
 
 \subsection{Datasets} \label{jembe_datasets}
@@ -1001,15 +1030,15 @@ SUBSECTION.
 Previous research into the micro-timing of Malian jembe music has meant there
 are some high-quality datasets of processed live recordings available.
 
-The first dataset is from Jacoby et al. [Jacoby2021] and consists of 11
+The first dataset is from Jacoby et al.\ \cite{jacoby2021} and consists of 11
 processed recordings of a piece called `Suku', which is a very commonly played
 piece in this style. The recordings were made by Rainer Polak in Bamako, Mali in
-2016 [Jacoby2021supp].
+2016 \cite{jacoby2021supp}.
 
 The second dataset is from the Interpersonal Entrainment in Music Performance
-(IEMP) Data Collection [Polak2018][Clayton2021]. This consists of 15 recordings
+(IEMP) Data Collection \cite{polak2020,clayton2021}. This consists of 15 recordings
 across three different pieces: `Manjanin', `Maraka', and `Woloso'. The
-recordings were again made by Polak in Bamako in 2006 and 2007. See APPENDIX for
+recordings were again made by Polak in Bamako in 2006 and 2007. See Appendix TODO for
 a full list of performers.
 
 The datasets supply the following data:
@@ -1030,7 +1059,7 @@ level (often notated as \setmetre{12}{8}). It is at this level, referred to as t
 Each event at the pulse level has a position in the cycle at which a note would
 occur if it were isochronous. The offset from this position describes the
 micro-timing of a note, and this is what is stored in the probability
-distributions described in SUBSECTION. Equation~\ref{eq:offset_from_phase} shows how the offset is calculated from the phase given by the datasets.
+distributions described in Section~\ref{style_class}. Equation~\ref{eq:offset_from_phase} shows how the offset is calculated from the phase given by the datasets.
 
 \begin{equation}
     \textnormal{offset} = \frac{(\textnormal{phase} \times \textnormal{beat division}) - \textnormal{metric location}}{2}
@@ -1038,25 +1067,25 @@ distributions described in SUBSECTION. Equation~\ref{eq:offset_from_phase} shows
 \end{equation}
 
 The phase is multiplied by the beat division (in this case, 3) to convert it
-into pulse units. The metric location at the pulse level (integer from 0 to 11)
+into pulse units. The metric location at the pulse level (an integer from 0 to 11)
 is subtracted to get the offset. The final division by two converts the offset
 into quarter lengths (because each pulse unit is an eighth length).
 
 Once the offset has been calculated for each drum stroke, I was then able to
 estimate the distribution of offsets for each of the twelve metric locations. I
-considered two types of approach for probability density estimation:
+considered two types of approach for this probability density estimation:
 
 \begin{itemize}
 	\item Kernel density estimation (non-parametric) -- applies smoothing to the
 data to fit an arbitrary distribution
 	\item Maximum likelihood estimation (parametric) -- choose an existing
-distribution to fit and estimate the parameters which fit the data the best
+distribution to fit and estimate the parameters which best fit the data
 \end{itemize}
 
 The advantage of KDE is that it would be able to accurately represent any shape
-of distribution the data may have. However, it stores each point which describes
-the probability density function. This means it generally has a higher memory
-requirement than MLE which only stores the values of the parameters. Another
+of distribution the data may have. However, each point in
+the probability density function has to be stored individually. This means it generally has a higher memory
+requirement than MLE, which only stores the values of the parameters. Another
 advantage of MLE is it allows hypothetical distributions to be easily defined
 without the need for data.
 
@@ -1064,10 +1093,10 @@ For this scenario, I chose to use MLE to fit a normal distribution to the data.
 A normal distribution was suitable because the data was assumed to be estimating
 a theoretical true value of the offset. A normal distribution requires two
 parameters: the mean, $\mu$, and the standard deviation, $\sigma$. It can be shown that the
-maximum likelihood estimator for the population mean $\hat{\mu}$ is the sample mean $\bar{x}$,
-and the estimator for the population standard deviation $\hat{\sigma}$ is the sample
-standard deviation $s$ [Dekking2005]. The calculation of $s$ uses Bessel's
-correction to get an unbiased estimator of $\hat{\sigma}$ [Upton2008].
+maximum likelihood estimator $\hat{\mu}$ for the population mean is the sample mean $\bar{x}$,
+and the estimator $\hat{\sigma}$ for the population standard deviation is the sample
+standard deviation $s$ \cite{dekking2005}. The calculation of $s$ uses Bessel's
+correction to get an unbiased estimator of $\hat{\sigma}$ \cite{upton2014}.
 
 
 \subsection{Tempo estimation} \label{tempo_estimation}
@@ -1076,17 +1105,17 @@ Generating a synthetic piece of jembe music requires analysis of other musical
 features as well as the micro-timing to sound realistic. One of these is the
 tempo (how fast or slow the beat is), which is measured in beats per minute
 (bpm). The tempo of a jembe piece of music typically increases substantially
-over the duration of the performance [Jacoby2021], with the last 15 seconds or
+over the duration of the performance \cite{jacoby2021}, with the last 15 seconds or
 so showing the tempo increasing at a much faster rate.
 
-The inter-beat interval is defined as the time between two subsequent beats in a
-piece of music from which the instantaneous tempo can be calculated [Dixon2002].
+The inter-beat interval (IBI) is defined as the time between two subsequent beats in a
+piece of music, from which the instantaneous tempo can be calculated \cite{dixon2001}.
 A moving average can be applied to the instantaneous tempo to obtain an estimate
 of the global tempo.
 
 For the jembe data, I first filtered all the onsets to include just those played
-by Jembe 2 (because it plays on each beat) [Jacoby2021], then filtered these to
-just onsets on the beats. I then calculated the inter-beat interval using Equation~\ref{eq:ibi}, where $b_i$ is the onset time of the $i$th beat. This is then converted to bpm by Equation~\ref{eq:tempo}. A moving average with window size 10 is then applied to smooth the tempo.
+by Jembe 2 (because it plays on each beat \cite{jacoby2021}), then filtered these to
+just onsets on the beats. I then calculated the inter-beat interval using Equation~\ref{eq:ibi}, where $b_i$ is the onset time of the $i$th beat. This is then converted to bpm by Equation~\ref{eq:tempo}. A moving average with window size 10 is then applied to smooth the tempo estimate.
 
 \begin{equation}
     \mathrm{IBI}_i = b_i - b_{i-1}
@@ -1098,8 +1127,8 @@ just onsets on the beats. I then calculated the inter-beat interval using Equati
 \end{equation}
 
 Inspection of the smoothed tempo graphs showed a logarithmic trend for the first $\sim95\%$ of the piece. A sharper increase follows this which was
-modelled by a quadratic curve. To fit curves to the data, I used the \verb'optimize.curve_fit' function from the SciPy Python library, which uses non-linear least
-squares. The parameters estimated by the curve fitting are then used in Sonic Pi
+modelled by a quadratic curve. To fit curves to the data, I used the \verb'optimize.curve_fit' function from the SciPy Python library, which uses a non-linear least
+squares method. The parameters estimated by the curve fitting are then used in Sonic Pi
 to control the tempo of a synthetic jembe piece during playback.
 
 
@@ -1114,7 +1143,7 @@ semi-realistic rhythms. My approach was as follows:
 
 \begin{enumerate}
     \item Compute the rhythm played by Jembe 1 in each cycle as a 12-bit binary number, where the bit value at each position indicates whether there was an onset at the corresponding pulse in that cycle
-    \item Convert the 12-bit binary numbers into a decimal integer for each cycle
+    \item Convert the 12-bit binary numbers into a unique decimal integer for each cycle
     \item Count the number of times rhythm $x$ is followed by rhythm $y$ and calculate transition probabilities from these
     \item Generate a random sequence of rhythm integers using the transition probabilities
     \item During playback, for each cycle, play a drum stroke on pulse $i$ if there is a 1 at bit $i$ in the binary representation of that cycle's rhythm integer
@@ -1142,21 +1171,21 @@ calculations were needed to derive it, which will be explained in this section.
 
 \subsection{Datasets} \label{waltz_datasets}
 
-I first considered using the Ballroom dataset [Gouyon2006], which contains
-30-second recordings of 65 pieces of Viennese walt music, and for which
-annotations of the beats exists [Krebs2013]. However, when I listened to the
+I first considered using the Ballroom dataset \cite{gouyon2006}, which contains
+30-second recordings of 65 pieces of Viennese waltz music, and for which
+annotations of the beats exists \cite{krebs2013}. However, when I listened to the
 recordings, I didn't notice any micro-timing. To test my suspicions, I performed
-the micro-timing analysis described in SUBSECTION and then conducted a
-one-sample t-test. This tests whether the sample mean of the offset of the
+the micro-timing analysis described in Section~\ref{waltz_micro-timing} and then conducted a
+one-sample \textit{t}-test. This tests whether the sample mean of the offset of the
 second beat is statistically significantly different from 0 (the case where
 there is no micro-timing). At the 5\% significance level, there were very few
 recordings which had any significant micro-timing, so this dataset was deemed
-unsuitable. See SUBSECTION for the full results of the test.
+unsuitable. See Section TODO for the full results of the test.
 
 I then constructed my own dataset comprising of 30-second samples from seven
 waltz recordings performed by the Vienna Philharmonic Orchestra, all of which
 have noticeable and statistically significant micro-timing. Because this dataset
-has no existing beat annotations, this step needed to be performed next.
+has no existing beat annotations, the next step was to produce my own.
 
 
 \subsection{Beat tracking} \label{beat_tracking}
@@ -1172,14 +1201,14 @@ perform well. Many implementations struggled because they expect the beats to be
 isochronous, i.e.\ having no systematic micro-timing, as is the case in most
 Western music. As a result, they would often skew the detected beats towards
 being isochronous, therefore not capturing the micro-timing. Of all these
-implementations, the beat tracking in the libfmp Python library [Mueller2021] (a
-dynamic programming approach from Müller's Fundamentals of Music Processing
-[Mueller2021b]) performed the best (see SUBSECTION for results). After some
+implementations, the beat tracking in the libfmp Python library \cite{mueller2021} (a
+dynamic programming approach from Müller's book on the Fundamentals of Music Processing
+\cite{mueller2021b}) performed the best (see Section TODO for results). After some
 small manual corrections, the beat onsets were ready for analysis, as described
-in SUBSECTION.
+in Section~\ref{waltz_micro-timing}.
 
 As an alternative, manual beat annotations were created using the Sonic
-Visualiser software [Cannam2010]. While the micro-timing from this approach was
+Visualiser software \cite{cannam2010}. While the micro-timing from this approach was
 more prominent, the data had a large variance which led to the generated music
 sounding erratic. For this reason, the automatic approach was chosen.
 
@@ -1188,7 +1217,7 @@ sounding erratic. For this reason, the automatic approach was chosen.
 
 To calculate the micro-timing offset of each beat from just the onset time
 involves first identifying the start and end of each cycle, estimating the onset
-of each beat if they were isochronous, then finding the difference between this
+of each beat as if they were isochronous, then finding the difference between this
 and the actual onset to get the offset. The full calculation is shown in
 Equation~\ref{eq:offset_from_onset}, where $i$ ranges over the indices of all the onsets in the piece.
 
@@ -1211,31 +1240,31 @@ duration of a cycle is assumed to be the time between its first beat and the
 first beat of the next cycle.
 
 Once the offsets have been derived, maximum
-likelihood estimation is used to get the distributions, as described in
-SUBSECTION.
+likelihood estimation is used to fit the probability distributions, as described in
+Section~\ref{jembe_micro-timing}.
 
 
 
 \section{MusicXML converters} \label{musicxml_converters}
 
 MusicXML is a commonly used file format for encoding Western music notation
-which is based on XML. In preparation for the evaluation, I have also
+which is based on XML \cite{good2001}. In preparation for the evaluation, I have also
 implemented a pair of converter programs between MusicXML and my extended Sonic
 Pi language.
 
 \begin{itemize}
 	\item \verb'convert_mxl.py' uses the \verb'music21' Python library to parse an input MusicXML file into Python objects, which are then iterated over to produce Sonic Pi code
-	\item \verb'convert_sonicpi.rb' takes an input Sonic Pi file and iterates over it to produce \verb'music21' Python code. This code is then run automatically which generates the final MusicXML output
+	\item \verb'convert_sonicpi.rb' takes an input Sonic Pi file and iterates over it to produce \verb'music21' Python code. This code is then run automatically to generate the final MusicXML output
 \end{itemize}
 
-The most interesting part of the converters is the \verb'convert_duration' algorithm
+The most interesting part of the converters is the \verb'convert_duration()' algorithm
 which converts a note specified by its quarter length duration into a (metrical
 level, multiplier) pair. This is essentially the inverse of the Bar class's
-\verb'add_note' method, which converts a metrical level and multiplier into a quarter length duration (see Section~\ref{bar_class}).
+\verb'add_note()' method, which converts a metrical level and multiplier into a quarter length duration (see Section~\ref{bar_class}).
 
 The algorithm first tries to find a metrical
 level whose value the note's duration divides into. For example, if the metre
-has levels made up of durations $\left[\frac{1}{4},\frac{1}{8},\frac{1}{16}\right]$, then a note with duration $\frac{5}{16}$
+has levels made up of durations $\frac{1}{4}$, $\frac{1}{8}$, and $\frac{1}{16}$, then a note with duration $\frac{5}{16}$
 can only exist at the third level, so the algorithm would return $(3,5)$.
 
 If no
@@ -1271,6 +1300,6 @@ Text.
 
 
 
-\printbibliography[title=References]
+\printbibliography[title=References,heading=bibintoc]
 
 \end{document}
