@@ -158,7 +158,7 @@ describes the ways in which beats are grouped and divided within recurring
 cycles. This forms different metrical levels within a hierarchy. Division levels
 are ones where the beat has been divided into more, shorter durations. Multiple
 levels are ones where the beats are grouped into fewer, longer durations. Figure~\ref{fig:metre_hierarchy_example} 
-shows the beat level, and some of the division and multiple levels for a simple \ \setmetre{4}{4} time signature, as well as a tree representation of the metrical hierarchy.
+shows the beat level, and some of the division and multiple levels for a simple \setmetre{4}{4} time signature, as well as a tree representation of the metrical hierarchy.
 A metre is `simple' if its first division level splits the beat into two, and
 `compound' if it splits into three \cite{omt2021}.
 
@@ -176,7 +176,7 @@ to what we call musical style by producing micro-timing effects. Different
 musical styles have different micro-timing strategies. A common example is the
 long-short pattern in swing rhythms, where every other eighth note (the first
 division level) is slightly delayed. This timing information is typically lost
-in music notation \textcolor{red}{(see FIGURE for an example of this)}, so musicians have to use
+in music notation, so musicians have to use
 their knowledge and experience of the style to inform their performance of the
 micro-timing. This is formalised in Justin London's Many Meters Hypothesis
 \cite{london2012}. A metre without any micro-timing is said to be `isochronous',
@@ -272,7 +272,7 @@ Otherwise:
 
 \section{Requirements analysis} \label{requirements_analysis}
 
-The project proposal (SECTION) features a list of success criteria outlining the
+The project proposal (Section~TODO) features a list of success criteria outlining the
 key milestones that needed to be achieved for the project to succeed. It also
 has a description of possible extensions. During the research and investigation
 stage of the project, I refined these into the list of requirements shown in
@@ -539,15 +539,12 @@ level.
 \end{algorithm}
 
 The \verb'get_multiple_level()' algorithm performs an estimate of the structure of
-higher metrical levels. It is an estimate because this information is not in the
-MetreTree's representation of the metre. The algorithm finds the new sequence
-length (number of children of the root) by dividing the length by its smallest prime factor.
-This is repeated until the target level $l$ is reached. For example, if the
-current MetreTree has six children, this is divided by its smallest prime factor
-(two) to get a \verb'new_length' of three. If another level higher is needed, the
-process iterates to get a \verb'new_length' of $3\div3=1$. The MetreTree's
-hierarchy is then partitioned into a \verb'new_length' number of equally sized
-MetreLeafs.
+higher metrical levels by clustering nodes together. It is an estimate because this information is not in the
+MetreTree's representation of the metre. The algorithm recursively clusters nodes until
+the desired metrical level $l$ is reached. The number of nodes combined in each cluster is
+determined by the smallest prime factor of the number of nodes at the level below. For
+example, if level $l+1$ has four nodes, they will be clustered in groups of two. If it
+has nine nodes, they will be clustered in groups of three.
 
 An important consideration when implementing the \verb'get_level()' method was to
 maximise its efficiency, because it is called at least once per note. The
@@ -578,12 +575,12 @@ Some examples of the output of \verb'get_level()' for the following hierarchy ar
         $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{3}{16},\frac{3}{16},\frac{3}{16},\frac{3}{16} \right]$ \\
         $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{1}{16},\frac{3}{8},\frac{3}{8} \right]$ \\
         $0$     & $\displaystyle \left[ \frac{1}{4},\frac{1}{4},\frac{1}{8},\frac{3}{4} \right]$ \\
-        $-1$    & $\displaystyle \left[ \frac{11}{16},\frac{11}{16} \right]$ \\
+        $-1$    & $\displaystyle \left[ \frac{1}{2},\frac{7}{8} \right]$ \\
         $-2$    & $\displaystyle \left[ \frac{11}{8} \right]$ \\ [1ex]
         \hline
     \end{tabular}
     \renewcommand{\arraystretch}{1.0}
-    \cprotect\caption{Examples of the output of \verb'get_level'$(l)$ at different metrical levels $l$ for the hierarchy $[[1/8,1/8],[1/8,[1/16,1/16]],1/8,3/4]$.}
+    \cprotect\caption{Examples of the output of \verb'get_level'$(l)$ at different metrical levels $l$ for the hierarchy $[[1/8,1/8],[1/8,[1/16,1/16]],1/8,3/4]$. Note how level $l=-1$ is formed by the clustering of level $l=0$.}
     \label{table:get_level}
 \end{table}
 
@@ -882,7 +879,7 @@ calculated by Equation~\ref{eq:micro-timing_sum_example}:
 
 \begin{equation}
     \begin{split}
-        t &= \sum_{i=0}^n T[i][L[i]] \\
+        t &= \sum_{i \in T.\mathrm{keys}} T[i][L[i]] \\
         &=T[0][L[0]]+T[1][L[1]] \\
         &=0.1+(-0.02) \\
         &=0.08
