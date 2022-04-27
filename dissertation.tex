@@ -38,6 +38,13 @@
 \usepackage{cprotect}
 % Aligning equations
 \usepackage{amsmath}
+% Auto-column tables
+\usepackage{tabularx}
+% Better table lines
+\usepackage{booktabs}
+% Multi-row and column tables
+\usepackage{multirow}
+
 
 \addbibresource{bibliography.bib}
 
@@ -278,12 +285,12 @@ has a description of possible extensions. During the research and investigation
 stage of the project, I refined these into the list of requirements shown in
 Table~\ref{table:requirements}.
 
-\begin{table}
+\begin{table}[ht]
 \centering
-\begin{tabular}{|l|c|}
-    \hline
+\begin{tabularx}{400pt}{Xc}
+    \toprule
     \textbf{Requirement}                                      & \textbf{Priority} \\
-    \hline
+    \midrule
     Research and implement representation of musical metre              & High \\
     Implement commands to play music in a given metre                   & High \\
     Implement representation of probability distributions for a style   & High \\
@@ -293,8 +300,8 @@ Table~\ref{table:requirements}.
     Generate synthetic music for the jembe case study                   & High \\
     Conduct user study to evaluate realism of generated music           & High \\
     Implement converter to and from MusicXML                            & Low \\
-    \hline
-\end{tabular}
+    \bottomrule
+\end{tabularx}
 \caption{Refined list of requirements (and their priorities) that should be achieved for the project to succeed as planned}
 \label{table:requirements}
 \end{table}
@@ -1286,7 +1293,507 @@ go.
 
 \chapter{Evaluation} \label{evaluation}
 
-Text.
+This chapter aims to demonstrate the capabilities of my project and prove the
+achievement of the success criteria.
+
+I will begin by showing the results of the
+data analysis which was conducted as part of the implementation. This is a
+crucial step towards being able to produce music with realistic micro-timing
+because it provides the data needed to populate the styles' probability
+distributions.
+
+Secondly, I will describe the motivation, methods, and results of
+a user study I conducted to evaluate how realistic the generated music sounds.
+This includes a detailed description of how the study was carried out, how the
+stimuli were constructed, and the full results. The section concludes with a
+discussion of the results and their significance.
+
+Finally, I use the MusicXML
+converters implemented earlier to demonstrate the value gained by an
+implementation of metre within Sonic Pi and showcase its successful use.
+
+
+
+\section{Data analysis results} \label{data_analysis_results}
+
+This section displays the results of the data analysis described in SECTION. I
+begin by describing the data-derived micro-timing for jembe and Viennese waltz,
+and the patterns which occur in them. Jembe is found to have a short-medium-long
+pattern in its pulses, and the waltz has a significantly early second beat. I
+then describe the results of the jembe tempo estimation.
+
+
+\subsection{Micro-timing estimation} \label{micro-timing_estimation_results}
+
+Figure~\ref{fig:suku_histogram} shows the results of the micro-timing estimation (SUBSECTION) for one of
+the jembe pieces, `Suku'. The histograms show the positions within the cycle
+that each of the 12 pulses occurred at (phase). The dashed lines show where the
+event would occur if they were isochronous, so the existence of the micro-timing
+can be seen clearly by the positions of the second and third pulses in each beat.
+By examining the positions of the histograms, the length of each pulse can be
+seen to follow a short-medium-long pattern (SML), which is consistent across
+each beat. Also shown are the probability density functions of the
+maximum-likelihood estimated normal distributions (SUBSECTION). The plots for
+the other jembe pieces showed the same pattern.
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/suku_histogram.pgf}
+    \caption{A histogram plot of the positions of each pulse within the cycle for Suku. The histograms are coloured by which beat they belong to. Dashed lines show the metrical grid. Black curves show the PDF of the MLE-derived probability distributions.}
+    \label{fig:suku_histogram}
+\end{figure}
+
+Figure~\ref{fig:waltz_histogram} shows the results for the waltz dataset (SUBSECTION). The calculations
+use the first beat as the definition for the start of the cycle, so every beat 1
+has an offset of 0, which is why its histogram has no variance. The early onset
+of the second beat can be clearly seen in the plot ($\mu=-0.0743,\sigma=0.0795$). The
+one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5,p=0.000$).
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/waltz-histogram.pgf}
+    \caption{A histogram plot of the offset of each beat for the waltz dataset. Dashed lines show the metrical grid. Black curves show the PDF of the MLE-derived probability distributions.}
+    \label{fig:waltz_histogram}
+\end{figure}
+
+
+\subsection{Jembe tempo estimation} \label{jembe_tempo_estimation_results}
+
+Figure~\ref{fig:suku_tempo} shows the change in estimated tempo over the duration of the piece for
+`Suku'. The tempo starts at around 135 bpm at the beginning of the piece and
+ends at around 175 bpm. The dark blue line shows the smoothed mean tempo, and
+the black lines show the logarithmic and quadratic curves fit to the data. The
+logarithmic curve in this example has the equation $y=17.1 \ln(x+18.7)+83.2$.
+The quadratic curve has the equation $y=-0.42x^2+84.2x-4014$. The
+shaded area shows $\pm1$ standard deviation from the mean.
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/suku-tempo.pgf}
+    \caption{Tempo estimation for `Suku'. Grey: Smoothed estimated tempo for each recording. Blue: Mean estimated tempo averaged over each recording. Shaded: One standard deviation from the mean. Black: Curves fit to the data.}
+    \label{fig:suku_tempo}
+\end{figure}
+
+
+
+\section{User study} \label{user_study}
+
+The key aim of this project was to be able to produce realistic style-specific
+micro-timing in Sonic Pi. To evaluate the realism, I have conducted a user study
+focusing on the two case study styles: Malian jembe and Viennese waltz. The
+methods used in this study were partly based on Neuhoff, Polak, and Fischinger's
+previous work [Neuhoff2017] which studied experts' perception and judgement of
+micro-timing in Malian jembe music.
+
+Participants were first primed on real-life
+examples of music from each style, then were presented with five synthetic
+samples of music from each style with different micro-timings. They were asked
+to score each sample on how well it fit the style, focusing on the timing.
+
+Significant results were obtained for the waltz section, however participants
+struggled more with the jembe section. Despite this, an expert in the Malian
+jembe style provided comments supporting the success of the implementation.
+SUBSECTION discusses the results in more detail.
+
+
+\subsection{Method} \label{user_study_method}
+
+To conduct the study, the following two hypotheses were tested on each style:
+
+\begin{enumerate}
+    \item Participants think samples with the data-derived micro-timing (the ``correct'' timing) fits the style best
+    \item Participants with more musical experience are more likely to think the correct timing fits best than those with less experience
+\end{enumerate}
+
+These hypotheses being accepted for a style would provide evidence for my
+implementation being able to produce music with realistic micro-timing.
+
+Micro-timing patterns in this study are given as strings representing the
+relative length of each beat/pulse as short (S), medium (M), or long (L). The
+data analysis results (SECTION) showed an SML pattern for the micro-timing in
+jembe music, and an SLL pattern for the Viennese waltz. Therefore, we would
+expect these ``correct'' patterns to be scored highest if the hypotheses are
+true.
+
+\subsubsection{Participants} \label{participants}
+
+A total of 23 participants were recruited, made up of 16 musicians and 7
+non-musicians, which included a variety of ages and genders. Participants were
+recruited mainly through personal connections and took part by completing an
+online form, which provided anonymity and required explicit consent to fill out.
+Ethics approval was granted prior to recruitment (see APPENDIX for details on
+the ethical and data protection procedures used).
+
+\subsubsection{Priming} \label{priming}
+
+Participants were not assumed to have any prior knowledge of the two musical
+styles, so priming was necessary to familiarise them with the styles and their
+micro-timing strategies. This meant expertise in the styles was not required, so
+participants could be recruited much more easily.
+
+For each of the two styles, participants were given a brief description of the
+style and 3-4 examples of real-life performances of music in that style. For
+jembe, these consisted of three short excerpts from Polak's 2006 recording of
+Manjanin [Polak2010], and the full recording. For the waltz, these consisted of
+30-second recordings of three different pieces by Johann Strauss I \& II
+performed by the Vienna Philharmonic Orchestra.
+
+\subsubsection{Scoring} \label{scoring}
+
+Participants were then presented with five synthetic samples for each style,
+each with different micro-timing (see SUBSECTION for details on the construction
+of the stimuli). They were then asked to consider each stimulus and assess how
+well they thought it fit with the priming examples they heard. Scores were given
+on a scale from 1 (``It sounds completely different'') to 5 (``It sounds fully
+identical'').
+
+
+\subsection{Stimulus construction} \label{stimulus_construction}
+
+\subsubsection{Jembe} \label{jembe_stimuli}
+
+Following Neuhoff et al.\ [Neuhoff2017], the jembe stimuli consisted of a
+four-cycle loop of a typical phrase from the piece `Manjanin'. The stimuli were
+generated in Sonic Pi at 145 bpm using jembe drum sound samples provided by
+Polak. Each stimulus lasted for approximately 10 seconds and began with a
+four-beat click track to help participants identify the beats in the music. The
+rhythmic pattern used from Manjanin is shown in Table~\ref{table:manjanin_rhythm} and is taken from the IEMP
+data collection [Polak2020].
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\linewidth}{
+        l
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        >{\centering\arraybackslash}X
+        }
+        \toprule
+        Metric location & 1.1 & 1.2 & 1.3 & 2.1 & 2.2 & 2.3 & 3.1 & 3.2 & 3.3 & 4.1 & 4.2 & 4.3 \\
+        \midrule
+        Jembe 1 & S &  & T & S &  & B &  & B & T &  & T &  \\
+        Jembe 2 & S &  & T & S &  & B & S &  & T & S &  & B \\
+        Dundun 1 & O &  & O &  &  & X &  &  & O &  & O &  \\
+        Dundun 2 & O &  &  &  &  & O & O &  &  &  &  & O \\
+        \bottomrule
+    \end{tabularx}
+    \caption{A typical rhythmic pattern from the piece `Manjanin'. A letter at a metric location indicates a drum stroke. The letter represents the timbre: Tone, Slap, or Bass for the jembe, and open (O) or closed (X) for the dundun.}
+    \label{table:manjanin_rhythm}
+\end{table}
+
+The micro-timing in jembe is at the pulse level, and the patterns are the same
+on each beat. Table 4 in Neuhoff et al.\ contains data for the length of each
+pulse as a proportion of the total beat length for five different timing
+patterns. My stimuli used four of these, plus an isochronous pattern, for a
+total of five stimuli. The SLL pattern from Neuhoff et al. was discarded as they
+found experts could not reliably discriminate between this and SML\@. Therefore,
+the final selection of timing patterns was SSL, SML, SLM, SLS, and isochronous.
+
+To use this data in my micro-timing implementation, I first needed to convert
+the relative pulse lengths into offsets, which I achieved with Equation~\ref{eq:proportion_to_offset}. The
+results of my data analysis in SECTION showed a SML pattern, so offsets for this
+pattern were obtained from the data analysis instead.
+
+\begin{equation}
+    \begin{split}
+        \mathrm{phase}_0 &= 0 \\
+        \mathrm{phase}_i &= \mathrm{cycleDuration} \times \sum_{j=0}^{i-1} \mathrm{relativePulseLength}_j \\
+        \mathrm{offset}_i &= \mathrm{phase}_i - \mathrm{metricLocation}_i
+    \end{split}
+    \label{eq:proportion_to_offset}
+\end{equation}
+
+The probability distributions used the calculated or data-derived offsets as
+their mean and used the same standard deviations as in the data analysis to try
+to maintain the expressivity of the performance.
+
+\subsubsection{Waltz} \label{waltz_stimuli}
+
+The waltz stimuli consisted of a 30-second excerpt of Johann Strauss II's ``The
+Blue Danube'' arranged for piano and played on Sonic Pi's piano synthesiser at
+190 bpm.
+
+The micro-timing in Viennese waltz is at the beat level and features a
+characteristically short first beat. Table 3 in Neuhoff et al. contains similar
+pulse-length data to their Table 4 (which I used for jembe above) but uses a different
+selection of timing patterns designed to test the importance of a short first
+pulse. Consequently, these patterns are also suitable for application to the
+beat lengths in the waltz. The final selection of timing patterns was SLL, LSS,
+SSL, SLS, and isochronous.
+
+Converting these to offsets was done in the same way as for jembe (Equation~\ref{eq:proportion_to_offset}).
+
+
+\subsection{Jembe results} \label{user_study_jembe_results}
+
+Figure~\ref{fig:jembe_bar_chart_overall} shows a bar chart of the mean goodness-of-fit score for each timing
+pattern for the jembe section. Figure~\ref{fig:jembe_bar_chart_ability} shows the same data broken down by
+musical experience. Table~\ref{table:jembe_t-test} shows the results of a two-tailed pairwise \textit{t}-test between the means of pairs of timing patterns. The significance level for the \textit{t}-test was 95\%.
+
+\begin{figure}[ht]
+    \centering
+    \makebox[\textwidth][c]{%
+        \begin{subfigure}{0.59\textwidth}
+            \centering
+            \input{figures/results-jembe-overall.pgf}
+            \caption{Overall}
+            \label{fig:jembe_bar_chart_overall}
+        \end{subfigure}
+        \begin{subfigure}{0.59\textwidth}
+            \centering
+            \input{figures/results-jembe-ability.pgf}
+            \caption{By musical experience}
+            \label{fig:jembe_bar_chart_ability}
+        \end{subfigure}
+    }%
+    \caption{Mean goodness-of-fit score for each timing pattern for jembe. Error bars show 95\% confidence interval.}
+    \label{fig:jembe_bar_charts}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\linewidth}{
+        l
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        }
+        \toprule
+        \multirow{2}{*}{Pair}
+        & \multicolumn{2}{c}{Overall}
+        & \multicolumn{2}{c}{Musician}
+        & \multicolumn{2}{c}{Non-musician} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(l){6-7}
+        & \multicolumn{1}{c}{$t$}
+        & \multicolumn{1}{c}{$p$}
+        & \multicolumn{1}{c}{$t$}
+        & \multicolumn{1}{c}{$p$}
+        & \multicolumn{1}{c}{$t$}
+        & \multicolumn{1}{c}{$p$} \\
+        \midrule
+        SML -- SSL & $-0.20$ & $\mathbf{.847}$ & $-0.52$ & $\mathbf{.609}$ & $0.28$ & $\mathbf{.788}$ \\
+        SML -- SLM & $-4.60$ & $.000$ & $-3.16$ & $.006$ & $-3.87$ & $.008$ \\
+        SML -- Iso & $-3.28$ & $.003$ & $-2.44$ & $.028$ & $-2.83$ & $.030$ \\
+        SML -- SLS & $4.23$ & $.000$ & $4.39$ & $.001$ & $1.19$ & $\mathbf{.280}$ \\
+        SSL -- SLM & $2.64$ & $.015$ & $1.69$ & $\mathbf{.111}$ & $2.12$ & $\mathbf{.078}$ \\
+        SSL -- Iso & $2.51$ & $.020$ & $1.94$ & $\mathbf{.072}$ & $1.51$ & $\mathbf{.182}$ \\
+        SSL -- SLS & $4.58$ & $.000$ & $4.20$ & $.001$ & $1.99$ & $\mathbf{.094}$ \\
+        SLM -- Iso & $-0.24$ & $\mathbf{.814}$ & $-0.52$ & $\mathbf{.609}$ & $0.55$ & $\mathbf{.604}$ \\
+        SLM -- SLS & $2.40$ & $.025$ & $3.04$ & $.008$ & $-0.42$ & $\mathbf{.689}$ \\
+        Iso -- SLS & $2.13$ & $.045$ & $2.67$ & $.017$ & $0.00$ & $\mathbf{1}$ \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Results of a two-tailed pairwise \textit{t}-test between the means of pairs of timing patterns for jembe. \textit{p}-values which are not significant at the 95\% level are in bold.}
+    \label{table:jembe_t-test}
+\end{table}
+
+The patterns with the greatest overall mean scores were SML ($\mu=3.57$) and SSL
+($\mu=3.52$). Despite SML scoring slightly higher, the \textit{t}-test found the difference
+to be insignificant. When looking just at musicians, there was a greater
+difference between SML and SSL, but it was still insignificant. Both SML and SSL
+were scored significantly higher than all other patterns. Therefore, despite
+there being some suggestion that Hypothesis 1 is true for jembe, there is
+insufficient evidence to accept it.
+
+The pattern with the lowest overall mean score was SLS ($\mu=2.35$), which was
+significantly lower than all other patterns. This is consistent with Neuhoff et
+al.'s findings. The SLM and isochronous patterns received very similar overall
+mean scores such that the \textit{t}-test found there to be no significant difference
+between them.
+
+Musicians gave a higher mean score to SML than non-musicians, however a \textit{t}-test
+between musicians' and non-musicians' scores found this difference to not be
+significant ($t=1.05, p=0.152$). Therefore, despite there being some suggestion
+that Hypothesis 2 is true for jembe, there is also insufficient evidence to
+accept it.
+
+
+\subsection{Waltz results} \label{user_study_waltz_results}
+
+Figure~\ref{fig:waltz_bar_charts} and Table~\ref{table:waltz_t-test} show mean goodness-of-fit scores and \textit{t}-test results for the
+waltz section of the study.
+
+\begin{figure}[ht]
+    \centering
+    \makebox[\textwidth][c]{%
+        \begin{subfigure}{0.59\textwidth}
+            \centering
+            \input{figures/results-waltz-overall.pgf}
+            \caption{Overall}
+            \label{fig:waltz_bar_chart_overall}
+        \end{subfigure}
+        \begin{subfigure}{0.59\textwidth}
+            \centering
+            \input{figures/results-waltz-ability.pgf}
+            \caption{By musical experience}
+            \label{fig:waltz_bar_chart_ability}
+        \end{subfigure}
+    }%
+    \caption{Mean goodness-of-fit score for each timing pattern for Viennese waltz. Error bars show 95\% confidence interval.}
+    \label{fig:waltz_bar_charts}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\linewidth}{
+        l
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        >{\raggedleft\arraybackslash}X
+        }
+        \toprule
+        \multirow{2}{*}{Pair}
+        & \multicolumn{2}{c}{Overall}
+        & \multicolumn{2}{c}{Musician}
+        & \multicolumn{2}{c}{Non-musician} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(l){6-7}
+        & \multicolumn{1}{c}{$t$}
+        & \multicolumn{1}{c}{$p$}
+        & \multicolumn{1}{c}{$t$}
+        & \multicolumn{1}{c}{$p$}
+        & \multicolumn{1}{c}{$t$}
+        & \multicolumn{1}{c}{$p$} \\
+        \midrule
+        SLL -- Iso & $-2.39$ & $.026$ & $-4.28$ & $.001$ & $0.81$ & $\mathbf{.448}$ \\
+        SLL -- SSL & $-6.15$ & $.000$ & $-5.22$ & $.000$ & $-3.29$ & $.017$ \\
+        SLL -- LSS & $-7.13$ & $.000$ & $-6.26$ & $.000$ & $-4.58$ & $.004$ \\
+        SLL -- SLS & $-6.26$ & $.000$ & $-8.47$ & $.000$ & $-1.44$ & $\mathbf{.200}$ \\
+        Iso -- SSL & $1.44$ & $\mathbf{.165}$ & $0.00$ & $\mathbf{1}$ & $3.06$ & $.022$ \\
+        Iso -- LSS & $2.86$ & $.009$ & $1.58$ & $\mathbf{.135}$ & $2.97$ & $.025$ \\
+        Iso -- SLS & $-3.32$ & $.003$ & $-1.96$ & $\mathbf{.068}$ & $-4.50$ & $.004$ \\
+        SSL -- LSS & $2.24$ & $.036$ & $2.24$ & $.041$ & $0.55$ & $\mathbf{.604}$ \\
+        SSL -- SLS & $-2.12$ & $.045$ & $-3.47$ & $.003$ & $0.00$ & $\mathbf{1}$ \\
+        LSS -- SLS & $-0.40$ & $\mathbf{.692}$ & $-0.90$ & $\mathbf{.383}$ & $0.26$ & $\mathbf{.805}$ \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Results of a two-tailed pairwise \textit{t}-test between the means of pairs of timing patterns for Viennese waltz. \textit{p}-values which are not significant at the 95\% level are in bold.}
+    \label{table:waltz_t-test}
+\end{table}
+
+The timing pattern with the greatest overall mean score was SLL ($\mu=3.83$), which
+the \textit{t}-test found to be significantly higher than any other pattern. When looking
+at musicians, this same trend can be seen, with SLL being scored much higher
+than all others. Non-musicians, however, scored the isochronous pattern higher
+than SLL, although the difference wasn't statistically significant. Therefore,
+Hypothesis 1 is supported by the data for the waltz style.
+
+The isochronous pattern had the second-highest overall mean score ($\mu=3.13$),
+although this was not significantly different to SSL ($\mu=2.74$).
+
+The patterns with the lowest overall mean scores were SLS ($\mu=2.26$) and LSS ($\mu=2.
+35$), and the difference between them was not significant. This is also the case
+when looking at musicians and non-musicians individually.
+
+A one-tailed \textit{t}-test between musicians' and non-musicians' scores found that
+musicians were significantly more likely to think SLL was a good fit than
+non-musicians ($t=2.07, p=0.025$). It similarly found that musicians were
+significantly less likely to think the isochronous pattern was a good fit than
+non-musicians ($t=-2.05, p=0.027$). Therefore, Hypothesis 2 is supported by the
+data for the waltz style.
+
+
+\subsection{Discussion} \label{user_study_discussion}
+
+The results for the Viennese waltz style have shown that my implementation is
+capable of producing music with realistic micro-timing, with participants
+showing a significant preference for the SLL timing pattern which used
+data-derived micro-timing. The preference is particularly clear in musicians,
+which is expected as they have more experience in this area.
+
+Non-musicians showed a preference (albeit statistically insignificant) for the
+isochronous pattern for the waltz. This is not surprising, as the participants
+are most likely to be familiar with Western popular music, which is typically
+isochronous. This suggests that many non-musicians may have failed to pick up on
+the micro-timing in the priming examples, and instead scored the stimuli based
+on what sounded most familiar to them.
+
+The results for the jembe style were generally not significant enough to prove
+the two hypotheses, however the data-derived SML pattern still ended up being
+the joint-highest scoring pattern.
+
+One of the main reasons I believe caused participants to struggle more with the
+jembe was that the micro-timing is at a deeper metrical level, so the three
+pulses making up the SML pattern occur rapidly. In fact, all three pulses are
+played in about 0.4 seconds, compared to about 1 second for the three beats of
+the waltz. This meant that participants unfamiliar with the style would likely
+find it much harder to identify the micro-timing, due to its speed. This is also
+supported by the fact that jembe had a lower mean familiarity score than the
+waltz (1.70 compared to 2.83).
+
+It is likely that the results for the jembe section would have shown a stronger
+trend for the SML pattern if the participants had been more familiar with jembe
+music, as in Neuhoff et al.\ [Neuhoff2017].
+
+In addition to this study, I generated a full-length synthetic recording of
+Manjanin with the data-derived micro-timing. In addition to providing much
+useful advice, Rainer Polak also gave an expert opinion on the full recording,
+describing it as ``realistic and beautiful''. Therefore, despite the
+participants in the study struggling to identify the expected pattern, it is
+clear the implementation can successfully produce realistic music.
+
+
+
+\section{Metre evaluation} \label{metre_evaluation}
+
+The final method I have used to assess the project is to evaluate the
+implementation of metre by demonstrating the new utility that can be gained from
+it. To do this, I have implemented a pair of converters which convert between
+music represented by MusicXML and by my extended Sonic Pi language. The goal is
+to convert a section of music from MusicXML into Sonic Pi and back again without
+any loss.
+
+With the existing Sonic Pi language, it would not be possible to perform this
+round-trip conversion without loss of information. In particular, without an
+implementation of metre, information about the metre of the piece and the
+grouping of notes into cycles would be lost upon conversion to Sonic Pi.
+Therefore a conversion back to MusicXML would likely have a different result to
+the original music.
+
+Figure~\ref{fig:musicxml_before} shows a short line of music written in Western music notation,
+representing a MusicXML file. This was then converted to Sonic Pi code (see
+APPENDIX for the code), then converted back to MusicXML. The final result is
+shown in Figure~\ref{fig:musicxml_after}. The resulting music sounds identical, and the changes in
+metre are preserved. The only difference is a slight change in the beaming in
+bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/metre_eval_orig.pdf}
+        \caption{Original}
+        \label{fig:musicxml_before}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/metre_eval_conv.pdf}
+        \caption{After round-trip conversion}
+        \label{fig:musicxml_after}
+    \end{subfigure}
+    \caption{A short line of music stored in a MusicXML file. Shown before and after a round-trip conversion to Sonic Pi and back to MusicXML.}
+    \label{fig:musicxml_before_after}
+\end{figure}
+
+In summary, the successful conversion of MusicXML music to Sonic Pi and back
+demonstrates the value and successful performance of my metre implementation
+because this would not have been possible without it.
+
+
 
 
 
