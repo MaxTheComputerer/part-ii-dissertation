@@ -48,7 +48,6 @@
 
 \addbibresource{bibliography.bib}
 
-%\renewcommand{\baselinestretch}{1.1}
 \raggedbottom
 
 \DeclareRobustCommand{\setmetre}[2]{\ensuremath{
@@ -106,13 +105,13 @@ I, [Name] of [College], being a candidate for Part II of the Computer Science Tr
 
 {\large
 \begin{tabular}{ll}
-Name:               & \bf Max Johnson                       \\
-College:            & \bf Clare College                     \\
-Project Title:      & \bf Musical micro-timing for live coding \\
+Candidate number:   & \bf 2388B \\
+Project title:      & \bf Musical micro-timing for live coding \\
 Examination:        & \bf Computer Science Tripos -- Part II, July 2022  \\
-Word Count:         & \bf N/A \\
-Project Originator: & Mark Gotham                    \\
-Supervisor:         & Mark Gotham                    \\ 
+Word count:         & \bf N/A \\
+Code line count:    & \bf N/A \\
+Project originator: & Mark Gotham \\
+Supervisor:         & Mark Gotham \\
 \end{tabular}
 }
 
@@ -120,7 +119,6 @@ Supervisor:         & Mark Gotham                    \\
 \section*{Original aims of the project}
 
 TBC
-
 
 \section*{Work completed}
 
@@ -137,9 +135,15 @@ TBC
 
 \pagestyle{headings}
 
+
+
+
+
 \chapter{Introduction}
 
 Text.
+
+
 
 
 
@@ -279,7 +283,7 @@ Otherwise:
 
 \section{Requirements analysis} \label{requirements_analysis}
 
-The project proposal (Section~TODO) features a list of success criteria outlining the
+The project proposal (Appendix~TODO) features a list of success criteria outlining the
 key milestones that needed to be achieved for the project to succeed. It also
 has a description of possible extensions. During the research and investigation
 stage of the project, I refined these into the list of requirements shown in
@@ -1026,7 +1030,7 @@ characterise a style of music. Therefore, these distributions must be derived
 from real-life examples of music. The next two sections describe the data
 collection and analysis that was done for the jembe and Viennese waltz styles.
 The results of the data analysis methods described here can be found in
-Section TODO.
+Section~\ref{data_analysis_results}.
 
 
 \subsection{Datasets} \label{jembe_datasets}
@@ -1184,7 +1188,7 @@ one-sample \textit{t}-test. This tests whether the sample mean of the offset of 
 second beat is statistically significantly different from 0 (the case where
 there is no micro-timing). At the 5\% significance level, there were very few
 recordings which had any significant micro-timing, so this dataset was deemed
-unsuitable. See Section TODO for the full results of the test.
+unsuitable.
 
 I then constructed my own dataset comprising of 30-second samples from seven
 waltz recordings performed by the Vienna Philharmonic Orchestra, all of which
@@ -1207,7 +1211,7 @@ Western music. As a result, they would often skew the detected beats towards
 being isochronous, therefore not capturing the micro-timing. Of all these
 implementations, the beat tracking in the libfmp Python library \cite{mueller2021} (a
 dynamic programming approach from Müller's book on the Fundamentals of Music Processing
-\cite{mueller2021b}) performed the best (see Section TODO for results). After some
+\cite{mueller2021b}) performed the best. After some
 small manual corrections, the beat onsets were ready for analysis, as described
 in Section~\ref{waltz_micro-timing}.
 
@@ -1316,7 +1320,7 @@ implementation of metre within Sonic Pi and showcase its successful use.
 
 \section{Data analysis results} \label{data_analysis_results}
 
-This section displays the results of the data analysis described in SECTION. I
+This section displays the results of the data analysis described in Sections~\ref{jembe_data_analysis} and~\ref{waltz_data_analysis}. I
 begin by describing the data-derived micro-timing for jembe and Viennese waltz,
 and the patterns which occur in them. Jembe is found to have a short-medium-long
 pattern in its pulses, and the waltz has a significantly early second beat. I
@@ -1325,7 +1329,7 @@ then describe the results of the jembe tempo estimation.
 
 \subsection{Micro-timing estimation} \label{micro-timing_estimation_results}
 
-Figure~\ref{fig:suku_histogram} shows the results of the micro-timing estimation (SUBSECTION) for one of
+Figure~\ref{fig:suku_histogram} shows the results of the micro-timing estimation (Section~\ref{jembe_micro-timing}) for one of
 the jembe pieces, `Suku'. The histograms show the positions within the cycle
 that each of the 12 pulses occurred at (phase). The dashed lines show where the
 event would occur if they were isochronous, so the existence of the micro-timing
@@ -1333,7 +1337,7 @@ can be seen clearly by the positions of the second and third pulses in each beat
 By examining the positions of the histograms, the length of each pulse can be
 seen to follow a short-medium-long pattern (SML), which is consistent across
 each beat. Also shown are the probability density functions of the
-maximum-likelihood estimated normal distributions (SUBSECTION). The plots for
+maximum-likelihood estimated normal distributions. The plots for
 the other jembe pieces showed the same pattern.
 
 \begin{figure}[ht]
@@ -1343,7 +1347,7 @@ the other jembe pieces showed the same pattern.
     \label{fig:suku_histogram}
 \end{figure}
 
-Figure~\ref{fig:waltz_histogram} shows the results for the waltz dataset (SUBSECTION). The calculations
+Figure~\ref{fig:waltz_histogram} shows the results for the waltz dataset (Section~\ref{waltz_data_analysis}). The calculations
 use the first beat as the definition for the start of the cycle, so every beat 1
 has an offset of 0, which is why its histogram has no variance. The early onset
 of the second beat can be clearly seen in the plot ($\mu=-0.0743,\sigma=0.0795$). The
@@ -1360,7 +1364,7 @@ one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5,p=
 \subsection{Jembe tempo estimation} \label{jembe_tempo_estimation_results}
 
 Figure~\ref{fig:suku_tempo} shows the change in estimated tempo over the duration of the piece for
-`Suku'. The tempo starts at around 135 bpm at the beginning of the piece and
+`Suku', as described in Section~\ref{tempo_estimation}. The tempo starts at around 135 bpm at the beginning of the piece and
 ends at around 175 bpm. The dark blue line shows the smoothed mean tempo, and
 the black lines show the logarithmic and quadratic curves fit to the data. The
 logarithmic curve in this example has the equation $y=17.1 \ln(x+18.7)+83.2$.
@@ -1382,7 +1386,7 @@ The key aim of this project was to be able to produce realistic style-specific
 micro-timing in Sonic Pi. To evaluate the realism, I have conducted a user study
 focusing on the two case study styles: Malian jembe and Viennese waltz. The
 methods used in this study were partly based on Neuhoff, Polak, and Fischinger's
-previous work [Neuhoff2017] which studied experts' perception and judgement of
+previous work \cite{neuhoff2017} which studied experts' perception and judgement of
 micro-timing in Malian jembe music.
 
 Participants were first primed on real-life
@@ -1392,8 +1396,7 @@ to score each sample on how well it fit the style, focusing on the timing.
 
 Significant results were obtained for the waltz section, however participants
 struggled more with the jembe section. Despite this, an expert in the Malian
-jembe style provided comments supporting the success of the implementation.
-SUBSECTION discusses the results in more detail.
+jembe style provided comments supporting the success of the implementation. Section~\ref{user_study_discussion} discusses the results in more detail.
 
 
 \subsection{Method} \label{user_study_method}
@@ -1401,8 +1404,8 @@ SUBSECTION discusses the results in more detail.
 To conduct the study, the following two hypotheses were tested on each style:
 
 \begin{enumerate}
-    \item Participants think samples with the data-derived micro-timing (the ``correct'' timing) fits the style best
-    \item Participants with more musical experience are more likely to think the correct timing fits best than those with less experience
+    \item \label{hypothesis_1} Participants think samples with the data-derived micro-timing (the ``correct'' timing) fits the style best
+    \item \label{hypothesis_2} Participants with more musical experience are more likely to think the correct timing fits best than those with less experience
 \end{enumerate}
 
 These hypotheses being accepted for a style would provide evidence for my
@@ -1410,7 +1413,7 @@ implementation being able to produce music with realistic micro-timing.
 
 Micro-timing patterns in this study are given as strings representing the
 relative length of each beat/pulse as short (S), medium (M), or long (L). The
-data analysis results (SECTION) showed an SML pattern for the micro-timing in
+data analysis results (Section~\ref{micro-timing_estimation_results}) showed an SML pattern for the micro-timing in
 jembe music, and an SLL pattern for the Viennese waltz. Therefore, we would
 expect these ``correct'' patterns to be scored highest if the hypotheses are
 true.
@@ -1434,15 +1437,14 @@ participants could be recruited much more easily.
 For each of the two styles, participants were given a brief description of the
 style and 3-4 examples of real-life performances of music in that style. For
 jembe, these consisted of three short excerpts from Polak's 2006 recording of
-Manjanin [Polak2010], and the full recording. For the waltz, these consisted of
+Manjanin \cite{polak2010}, and the full recording. For the waltz, these consisted of
 30-second recordings of three different pieces by Johann Strauss I \& II
 performed by the Vienna Philharmonic Orchestra.
 
 \subsubsection{Scoring} \label{scoring}
 
 Participants were then presented with five synthetic samples for each style,
-each with different micro-timing (see SUBSECTION for details on the construction
-of the stimuli). They were then asked to consider each stimulus and assess how
+each with different micro-timing (see Section~\ref{stimulus_construction} below). They were then asked to consider each stimulus and assess how
 well they thought it fit with the priming examples they heard. Scores were given
 on a scale from 1 (``It sounds completely different'') to 5 (``It sounds fully
 identical'').
@@ -1452,13 +1454,13 @@ identical'').
 
 \subsubsection{Jembe} \label{jembe_stimuli}
 
-Following Neuhoff et al.\ [Neuhoff2017], the jembe stimuli consisted of a
+Following Neuhoff et al.\ \cite{neuhoff2017}, the jembe stimuli consisted of a
 four-cycle loop of a typical phrase from the piece `Manjanin'. The stimuli were
 generated in Sonic Pi at 145 bpm using jembe drum sound samples provided by
 Polak. Each stimulus lasted for approximately 10 seconds and began with a
 four-beat click track to help participants identify the beats in the music. The
 rhythmic pattern used from Manjanin is shown in Table~\ref{table:manjanin_rhythm} and is taken from the IEMP
-data collection [Polak2020].
+data collection \cite{polak2020}.
 
 \begin{table}[ht]
     \centering
@@ -1500,7 +1502,7 @@ the final selection of timing patterns was SSL, SML, SLM, SLS, and isochronous.
 
 To use this data in my micro-timing implementation, I first needed to convert
 the relative pulse lengths into offsets, which I achieved with Equation~\ref{eq:proportion_to_offset}. The
-results of my data analysis in SECTION showed a SML pattern, so offsets for this
+results of my data analysis in Section~\ref{micro-timing_estimation_results} showed a SML pattern, so offsets for this
 pattern were obtained from the data analysis instead.
 
 \begin{equation}
@@ -1604,7 +1606,7 @@ The patterns with the greatest overall mean scores were SML ($\mu=3.57$) and SSL
 to be insignificant. When looking just at musicians, there was a greater
 difference between SML and SSL, but it was still insignificant. Both SML and SSL
 were scored significantly higher than all other patterns. Therefore, despite
-there being some suggestion that Hypothesis 1 is true for jembe, there is
+there being some suggestion that Hypothesis~\ref{hypothesis_1} is true for jembe, there is
 insufficient evidence to accept it.
 
 The pattern with the lowest overall mean score was SLS ($\mu=2.35$), which was
@@ -1616,8 +1618,7 @@ between them.
 Musicians gave a higher mean score to SML than non-musicians, however a \textit{t}-test
 between musicians' and non-musicians' scores found this difference to not be
 significant ($t=1.05, p=0.152$). Therefore, despite there being some suggestion
-that Hypothesis 2 is true for jembe, there is also insufficient evidence to
-accept it.
+that Hypothesis~\ref{hypothesis_2} is true for jembe, there is also insufficient evidence to accept it.
 
 
 \subsection{Waltz results} \label{user_study_waltz_results}
@@ -1690,7 +1691,7 @@ the \textit{t}-test found to be significantly higher than any other pattern. Whe
 at musicians, this same trend can be seen, with SLL being scored much higher
 than all others. Non-musicians, however, scored the isochronous pattern higher
 than SLL, although the difference wasn't statistically significant. Therefore,
-Hypothesis 1 is supported by the data for the waltz style.
+Hypothesis~\ref{hypothesis_1} is supported by the data for the waltz style.
 
 The isochronous pattern had the second-highest overall mean score ($\mu=3.13$),
 although this was not significantly different to SSL ($\mu=2.74$).
@@ -1703,7 +1704,7 @@ A one-tailed \textit{t}-test between musicians' and non-musicians' scores found 
 musicians were significantly more likely to think SLL was a good fit than
 non-musicians ($t=2.07, p=0.025$). It similarly found that musicians were
 significantly less likely to think the isochronous pattern was a good fit than
-non-musicians ($t=-2.05, p=0.027$). Therefore, Hypothesis 2 is supported by the
+non-musicians ($t=-2.05, p=0.027$). Therefore, Hypothesis~\ref{hypothesis_2} is supported by the
 data for the waltz style.
 
 
@@ -1737,7 +1738,7 @@ waltz (1.70 compared to 2.83).
 
 It is likely that the results for the jembe section would have shown a stronger
 trend for the SML pattern if the participants had been more familiar with jembe
-music, as in Neuhoff et al.\ [Neuhoff2017].
+music, as in Neuhoff et al.\ \cite{neuhoff2017}.
 
 In addition to this study, I generated a full-length synthetic recording of
 Manjanin with the data-derived micro-timing. In addition to providing much
@@ -1765,8 +1766,8 @@ Therefore a conversion back to MusicXML would likely have a different result to
 the original music.
 
 Figure~\ref{fig:musicxml_before} shows a short line of music written in Western music notation,
-representing a MusicXML file. This was then converted to Sonic Pi code (see
-APPENDIX for the code), then converted back to MusicXML. The final result is
+representing a MusicXML file. This was then converted to Sonic Pi code (shown in
+APPENDIX), then converted back to MusicXML. The final result is
 shown in Figure~\ref{fig:musicxml_after}. The resulting music sounds identical, and the changes in
 metre are preserved. The only difference is a slight change in the beaming in
 bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly.
@@ -1804,6 +1805,21 @@ Text.
 
 
 
-\printbibliography[title=References,heading=bibintoc]
+\printbibliography[heading=bibintoc]
+
+
+
+
+
+\appendix
+
+\chapter{Appendix thing}
+
+\section{Some thing}
+abc
+
+
+
+\chapter{Project proposal}
 
 \end{document}
