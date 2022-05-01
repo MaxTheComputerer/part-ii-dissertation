@@ -44,6 +44,10 @@
 \usepackage{booktabs}
 % Multi-row and column tables
 \usepackage{multirow}
+% Code syntax highlighting
+\usepackage{minted}
+% Multi-column environments
+\usepackage{multicol}
 
 
 \addbibresource{bibliography.bib}
@@ -110,8 +114,8 @@ Project title:      & \bf Musical micro-timing for live coding \\
 Examination:        & \bf Computer Science Tripos -- Part II, July 2022  \\
 Word count:         & \bf N/A \\
 Code line count:    & \bf N/A \\
-Project originator: & Mark Gotham \\
-Supervisor:         & Mark Gotham \\
+Project originator: & \bf Mark Gotham \\
+Supervisor:         & \bf Mark Gotham \\
 \end{tabular}
 }
 
@@ -141,7 +145,71 @@ TBC
 
 \chapter{Introduction} \label{introduction}
 
-Text.
+In this project, I present a novel system for generating music with
+style-specific micro-timing in the Sonic Pi live coding language. The aim was to
+use a probabilistic approach to control the exact timing of music written in
+Sonic Pi according to realistic deviations found in music across the world. My
+implementation introduces the concept of musical metre into Sonic Pi, for which
+I demonstrate its successful use and then utilise to create micro-timing. I also
+perform data analysis on the micro-timing of two different styles of music and
+evaluate the realism of the resulting music. This achieves the key success
+criteria set out in my project proposal and one suggested extension.
+
+
+
+\section{Motivation} \label{motivation}
+
+Micro-timing in music refers to small deviations in the timing of notes from
+their exact, grid-like positions in the metre (see Section~\ref{metre_background} for details). These
+deviations occur naturally in all human performances, but when they occur
+systematically, they make an important contribution to what defines a musical
+style. Therefore, this a very valuable feature when creating realistic music.
+Many commonly used music synthesis environments (such as Sonic Pi) lack the
+ability to control micro-timing during playback beyond simple jazz swing effects.
+By implementing this, I aim to give Sonic Pi composers the ability to produce
+music in certain styles more realistically. It also allows for further
+creativity, such as by applying the micro-timing strategies of one style to
+music from another style.
+
+Music live coding (Section~\ref{live_coding_background}) is a way of creating and performing music by writing
+and modifying code in real time. This was an interesting area to focus on for
+this project because the nature of live coding allows for creative applications
+of micro-timing, such as by adjusting the micro-timing during a performance.
+
+The second major component of my project was the data analysis which I performed
+on recordings of music from two case study styles. The motivation for this was
+to be able to use my implementation to generate music from these styles which
+has realistic micro-timing.
+
+
+
+\section{Related work} \label{related_work}
+
+Creating music with synthetic micro-timing has been explored as part of music
+information retrieval (MIR) for a long time. This is often attempting to model
+human-like expressive timing \cite{bilmes1993}. Oore et al.\ \cite{oore2020} used an
+LSTM-based recurrent neural network to generate piano music with expressive
+timing and dynamics. Huang and Yang \cite{huang2020} use a transformer model with
+metrical constraints to automatically compose pop music. The FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live takes a different approach, and gives the user
+control over swing and other micro-timing deviations, including a probabilistic
+element.
+
+Most live coding languages lack a full hierarchical representation of musical
+metre (Section~\ref{metre_background}), typically only featuring a concept of beats and time signatures.
+For example, the Max/MSP language uses its transport object to allow
+access to bar and beat numbers for the current time signature. Gibber
+\cite{roberts2012} emphasises a \setmetre{4}{4} time signature by default, and allows users to
+trigger music to play at the beginning of a bar. An exception is McLean's Tidal
+Cycles \cite{mclean2010} which uses a cyclic notion of time which can be subdivided
+to achieve more complex hierarchies. Tidal also has a \verb'swingBy' function\footnote{\url{https://tidalcycles.org/docs/patternlib/tour/time/}}, which
+implements a simple jazz swing micro-timing effect.
+
+In summary, though there has been much research into the analysis of
+micro-timing in different musical styles, and the application of expressive
+timing to computer-generated music, implementations of style-specific
+micro-timing as part of music software are rare. Additionally, musical metre is
+a concept often underrepresented in live coding. With this project, I hope to
+address this with my implementation for Sonic Pi.
 
 
 
@@ -283,7 +351,7 @@ Otherwise:
 
 \section{Requirements analysis} \label{requirements_analysis}
 
-The project proposal (Appendix~TODO) features a list of success criteria outlining the
+The project proposal (Appendix~\ref{project_proposal}) features a list of success criteria outlining the
 key milestones that needed to be achieved for the project to succeed. It also
 has a description of possible extensions. During the research and investigation
 stage of the project, I refined these into the list of requirements shown in
@@ -1036,7 +1104,7 @@ Section~\ref{data_analysis_results}.
 \subsection{Datasets} \label{jembe_datasets}
 
 Previous research into the micro-timing of Malian jembe music has meant there
-are some high-quality datasets of processed live recordings available.
+are some high-quality datasets of processed live recordings available. See Appendix~\ref{appendix_datasets_jembe} for more performer and recording details.
 
 The first dataset is from Jacoby et al.\ \cite{jacoby2021} and consists of 11
 processed recordings of a piece called `Suku', which is a very commonly played
@@ -1046,8 +1114,7 @@ piece in this style. The recordings were made by Rainer Polak in Bamako, Mali in
 The second dataset is from the Interpersonal Entrainment in Music Performance
 (IEMP) Data Collection \cite{polak2020,clayton2021}. This consists of 15 recordings
 across three different pieces: `Manjanin', `Maraka', and `Woloso'. The
-recordings were again made by Polak in Bamako in 2006 and 2007. See Appendix TODO for
-a full list of performers.
+recordings were again made by Polak in Bamako in 2006 and 2007.
 
 The datasets supply the following data:
 \begin{itemize}
@@ -1293,8 +1360,38 @@ go.
 
 
 
-\section{Repository overview}
-abc
+\section{Repository overview} \label{repository}
+
+There are two main components to the repository: the Sonic Pi code, and the data analysis code. The structure of the \verb'sonic-pi' directory follows that of the main Sonic Pi source code\footnote{\url{https://github.com/sonic-pi-net/sonic-pi/tree/stable}}, which is not included here. All code in the repository was written by me, except where specified below.
+
+The following is the high-level structure of the repository:
+\vspace{5mm}
+\dirtree{%
+.1 repository/.
+.2 sonic-pi/\DTcomment{Code for micro-timing implementation}.
+.3 app/server/ruby/.
+.4 lib/sonicpi/.
+.5 lang/\DTcomment{Sonic Pi language commands}.
+.6 sound.rb\DTcomment{My code is lines 4080--4188}.
+.6 western\_theory.rb\DTcomment{My code is lines 1118--1146}.
+.5 metre/\DTcomment{Classes for metre implementation}.
+.6 bar.rb.
+.6 distribution.rb.
+.6 metre.rb.
+.6 style.rb.
+.4 test/.
+.5 test\_metre.rb\DTcomment{Unit testing for metre operations}.
+.2 micro-timing-data-analysis/\DTcomment{Code for data analysis}.
+.3 data/\DTcomment{Raw data of recordings}.
+.3 .gitignore.
+.3 analysis.py\DTcomment{Loads data for analysis}.
+.3 beattrack.py\DTcomment{Performs beat tracking on an audio file}.
+.3 convert\_mxl.py\DTcomment{Converts MusicXML to Sonic Pi}.
+.3 convert\_sonicpi.rb\DTcomment{Converts Sonic Pi to MusicXML}.
+.3 convert\_transcription.py\DTcomment{Converts jembe transcription text files to Sonic Pi}.
+.3 metre.rb\DTcomment{Copy of metre code for converters}.
+.3 piece.py\DTcomment{Class for analysing a single piece}.
+}
 
 
 
@@ -1431,8 +1528,7 @@ A total of 23 participants were recruited, made up of 16 musicians and 7
 non-musicians, which included a variety of ages and genders. Participants were
 recruited mainly through personal connections, and took part by completing an
 online form, which provided anonymity and required explicit consent to fill out.
-Ethics approval was granted prior to recruitment (see APPENDIX for details on
-the ethical and data protection procedures used).
+Ethics approval was granted prior to recruitment.
 
 \subsubsection{Priming} \label{priming}
 
@@ -1860,7 +1956,7 @@ jembe music, who described the results as ``realistic and beautiful''.
 \section{Lessons learnt} \label{lessons_learnt}
 
 This project has given me the opportunity to develop my understanding of areas
-of computer science, such as data science, distributed systems, and tree data
+of computer science such as data science, distributed systems, and tree data
 structures. I have also learnt a lot about micro-timing in music, the jembe
 style of music, and the theory of metre.
 
@@ -1908,13 +2004,427 @@ timing offsets between style-specific and isochronous.
 
 
 
-\chapter{Appendix thing}
+\chapter{Datasets} \label{appendix_datasets}
 
-\section{Some thing}
-abc
-
+This appendix details the datasets used in the data analysis (Sections~\ref{jembe_data_analysis} and~\ref{waltz_data_analysis}) and user study (Section~\ref{user_study}).
 
 
-\chapter{Project proposal}
+
+\section*{Jembe} \label{appendix_datasets_jembe}
+
+Two datasets of recordings of jembe performances were used.
+
+The first is from Jacoby et al. \cite{jacoby2021} and consists of 11 recordings of a piece called `Suku', which is very commonly played in Mali. The recordings were made by Rainer Polak in Bamako, Mali in 2016. They feature Drisa Kone on Jembe 1, Sedu Keita on Jembe 2, and Madu Jakite on Dundun \cite{jacoby2021supp}. The dataset can be accessed from \url{https://osf.io/8wyav/}.
+
+The second dataset is part of the Interpersonal Entrainment in Music Performance (IEMP)
+Data Collection \cite{polak2020,clayton2021} and consists of 15 recordings across three different pieces: `Manjanin', `Maraka', and `Woloso'. The recordings were made by Polak in Bamako in 2006/7. They feature performances by Drisa Kone, Sedu Balo, Madu Jakite, Antoine Traole, Isa Coulibaly, and Jeli Madi Kuyate. Each recording is between 2 and 6 minutes in length. The dataset can be accessed from \url{https://osf.io/m652x/}.
+
+For the jembe section of the user study, participants were primed on four recordings of jembe music (Section~\ref{priming}). The first two of these are Audio 1a and 1b from Polak \cite{polak2010}. These are 14-second loops of Cycle 178 from his 2006 recording of Manjanin. Audio 1b isolates the Jembe 1 part from Audio 1a. The third example was a 13-second loop of Cycles 17 and 18 from the same recording. I included this so participants could be shown an example at a slower tempo. The final example was the full recording of Manjanin, which lasted 5 minutes.
+
+
+
+\section*{Waltz} \label{appendix_datasets_waltz}
+
+Due to the lack of suitable existing datasets for Viennese waltz discussed in Section~\ref{waltz_datasets}, I created a new dataset consisting of 30-second samples from seven recordings of waltz pieces performed by the Vienna Philharmonic Orchestra. The full dataset is shown in Table~\ref{table:waltz_dataset}. All pieces were composed by Johann Strauss II, except for Recording 4, which was composed by Johann Strauss I. For the waltz section of the user study, participants were primed on Recordings 4, 5, and 7 from the dataset (Section~\ref{priming}). 
+
+\begin{table}[ht]
+    \begin{tabularx}{\linewidth}{
+        l
+        >{\raggedright\arraybackslash}X
+        l
+        l
+    }
+        \toprule
+        ID & Title & Conductor & Recording date \\
+        \midrule
+        1 & The Blue Danube & Georges Prêtre & 1st January 2010 \\
+        2 & ``Die Fledermaus'' Overture & Zubin Mehta & 29th May 1999 \\
+        3 & Kaiser-Walzer & Herbert von Karajan & 1st January 1987 \\
+        4 & Loreley-Rhein-Klänge & Zubin Mehta & 29th May 1999 \\
+        5 & Tales From The Vienna Woods & Daniel Barenboim & 1st January 2014 \\
+        6 & Wiener Blut & Zubin Mehta & 29th May 1999 \\
+        7 & Wiener Bonbons & Zubin Mehta & 29th May 1999 \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Table of recordings included in the Viennese waltz dataset}
+    \label{table:waltz_dataset}
+\end{table}
+
+
+
+
+
+\chapter{Code examples} \label{appendix_code_examples}
+
+This appendix shows examples of Sonic Pi code that use my implementation to play music. These were used as part of testing and evaluation of the project.
+
+
+
+\section*{Manjanin} \label{appendix_code_manjanin}
+
+The following Sonic Pi code is for a full performance of the jembe piece Manjanin, using a transcription of Polak's 2006 recording (see Appendix~\ref{appendix_datasets_jembe}). The rest of the transcribed Jembe 1 part at line 91 has been omitted.
+
+\inputminted[linenos=true]{ruby}{figures/manjanin_code.rb}
+
+
+
+\section*{The Blue Danube} \label{appendix_code_blue_danube}
+
+The following Sonic Pi code is for an excerpt of Johann Strauss II's ``The Blue Danube'' arranged for piano. This was used to generate the stimuli for the waltz part of the user study (Section~\ref{waltz_stimuli}). To save space, only the melody is shown in full here.
+
+\begin{multicols}{2}
+    \inputminted[linenos=true]{ruby}{figures/blue_danube_code.rb}
+\end{multicols}
+
+
+
+\section*{Metre evaluation} \label{appendix_code_metre_evaluation}
+
+As part of the evaluation of my metre implementation (Section~\ref{metre_evaluation}), I converted the music shown in Figure~\ref{fig:appendix_musicxml_before} from a MusicXML representation to Sonic Pi code, and back. This appendix shows the intermediate Sonic Pi code generated, first with the metre implementation, and then without.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/metre_eval_orig.pdf}
+    \caption{Western music notation representation of the music used in the metre evaluation. Reproduced from Figure~\ref{fig:musicxml_before_after}.}
+    \label{fig:appendix_musicxml_before}
+\end{figure}
+
+
+\subsection*{With metre implementation}
+
+\inputminted[linenos=true]{ruby}{figures/metre_eval_code.rb}
+
+
+\subsection*{Without metre implementation}
+
+\begin{multicols}{2}
+    \inputminted[linenos=true]{ruby}{figures/metre_eval_bad_code.rb}
+\end{multicols}
+
+
+
+
+
+\chapter{Project proposal} \label{project_proposal}
+
+\begin{refsection}
+
+\begin{center}
+    \Large \bf Part II Project Proposal
+
+    Musical micro-timing for live coding
+\end{center}
+
+\section*{Introduction}
+
+The aim of this project is to create a tool to generate music with
+style-specific micro-timing integrated into a live coding environment such as
+Sonic Pi.
+
+Each style will have a probability distribution for the timing of event
+occurrences within a metrical cycle which is used to randomly adjust the exact
+timing of each note. This will allow micro-timing found in styles such as
+Viennese Waltz, swing, Malian jembe drum ensembles, etc.\ to be used in live
+coding.
+
+The Malian jembe piece `Suku' will be used as a primary case study for this
+project due to having a highly consistent micro-timing strategy, however the
+application will be able to encode and generate music in other styles.
+
+The implementation will be evaluated for its generative power, i.e.\ how
+realistic the generated music is for specific musical styles, using human judges
+with expertise in these styles, and for its responsiveness.
+
+
+\subsection*{Metre}
+
+A beat is a regularly occurring pulse in music. Metre describes the ways beats
+are grouped and divided. Simple metres divide the beat into two, and then four.
+Compound metres divide the beat into three, and then six \cite{omt2021}.
+
+\begin{figure}[ht]
+    \includegraphics[width=0.6\linewidth]{figures/proposal/metre example.png}
+    \caption{Diagram showing how the beat can be divided into distinct metrical levels in a simple metre.}
+    \label{fig:proposal_metre_example}
+\end{figure}
+
+Duple metres group two beats together, triple metres group three beats together,
+and quadruple metres group four beats together. Beats can be grouped together to
+form metrical cycles (bars) \cite{omt2021}.
+
+All music performed by humans deviates from these simple ratios, and the ways in
+which these deviations occur contribute significantly to what we call musical
+style. Different musical styles have specific micro-timing strategies, such as
+the long-short pattern in a swing rhythm, or the short-long-long pattern in a
+Viennese Waltz. This micro-timing is not usually explicitly written but the
+performers use their knowledge of the style to play the micro-timings, as
+described by the Many Metres Hypothesis \cite{london2012}. When transcribed into something
+like Western notation much of this timing information is lost.
+
+
+\subsection*{Live coding}
+
+Music live coding is a way of creating and performing music by writing and
+modifying code in real time. A popular music live coding program is Sonic Pi,
+which was designed as an educational tool for teaching programming in schools.
+It implements its own domain-specific language written in Ruby, using the
+SuperCollider sound synthesis server to produce sounds \cite{aaron2013}. One drawback of
+Sonic Pi is that it currently doesn't have a built-in notion of metre or
+style-specific micro-timing, which is what this project hopes to address.
+
+
+\subsection*{Case study}
+
+The Malian jembe musical style consists of a small group of drummers with
+different instruments and roles playing very fast and complex rhythms. In a
+traditional jembe trio, there are two jembe players and one dundun player, with
+Jembe 1 having a lead role, Jembe 2 playing a simple accompaniment, and Dundun
+playing a varying pattern that's characteristic of each piece of music \cite{jacoby2021}.
+
+This style of music is an ideal case study for this project because it has a
+highly consistent micro-timing strategy; Malian drummers have been shown to have
+one of the lowest levels of timing variability between performers in the world
+\cite{jacoby2021}. It is also relatively constrained in that the pitch, timbre, and number of
+instruments is very limited, so timing can be focused on easily.
+
+The specific piece of music I will be looking at is Suku. This is one of around
+25 commonly played pieces in this style, out of over 60 in total in Bamako. Suku
+is the most frequently played of these pieces so is typical of the style, and
+the data gathered by Jacoby et al.\ \cite{jacoby2021} from live performances of this piece will
+allow me to produce probability distributions which accurately represent the
+micro-timing of this style of music.
+
+Figure~\ref{fig:proposal_histogram} shows the timing of drum-strokes in Suku and its compound quadruple
+metre. By looking at the histogram, it can be seen that the metric positions are
+non-isochronous because they aren't equally spaced. Figure~\ref{fig:proposal_transcription} shows how this
+rhythm might be written in Western notation, but this loses the micro-timing
+information.
+
+\begin{figure}[ht]
+    \includegraphics[width=\linewidth]{figures/proposal/histograms.png}
+    \caption{Onset data for each instrument. The event histogram shows the position of each event within the cycle. Reproduced from \cite{jacoby2021}.}
+    \label{fig:proposal_histogram}
+\end{figure}
+
+\begin{figure}[ht]
+    \includegraphics[width=\linewidth]{figures/proposal/transcription.pdf}
+    \caption{Drum-strokes from Suku transcribed into Western notation in a 12/8 time signature. The micro-timing of the music is lost in this notation.}
+    \label{fig:proposal_transcription}
+\end{figure}
+
+
+
+\section*{Starting point}
+
+No work has been undertaken on this project so far. I will be building this on
+top of the existing codebase of Sonic Pi, which will handle audio playback and
+basic timekeeping.
+
+
+
+\section*{Substance and structure}
+
+This project will implement the style-specific micro-timing strategies into
+Sonic Pi, using Suku as a case study. This will be built flexibly to allow other
+styles to be encoded and combined in creative ways, such as by applying the
+micro-timing strategies of one style to music from another style.
+
+The first step will be to gain familiarity with Sonic Pi and be able to produce
+some simple music using it. I will then need to investigate how timing works in
+Sonic Pi, and gain familiarity with its codebase and the languages it's written
+in. Next, I will begin writing code which interacts with or modifies the
+functionality of Sonic Pi. To do this, I will need to investigate the best way
+of interacting with it, whether this be modifying the Sonic Pi code itself or
+writing an application which communicates with it or with the SuperCollider
+server.
+
+The next main step will be to decide on a method of encoding probability
+distributions for the timing of event occurrences within a metrical cycle at a
+particular metrical level, and for each instrument/part in the piece of music.
+This then needs implementing in the language chosen in the previous stage.
+
+The final stage of implementation will be to use the representation of the
+probability distributions to randomly adjust the timing of each beat (or
+equivalent) during execution of a Sonic Pi program to produce the desired
+micro-timing effects.
+
+After this has been completed, I will use the data from \cite{jacoby2021} to produce
+probability distributions for Suku. The data includes the exact time of each
+drum-stroke (onset), its metric position in the cycle, and its phase (exact
+offset from the downbeat of the cycle). This is provided for each instrument and
+for multiple recording takes. This was used in the paper to produce the graph in
+Figure~\ref{fig:proposal_histogram}. I will use maximum likelihood estimation for each of the twelve metric
+grid positions for each instrument to fit a normal probability distribution to
+the data for each one. The resulting probability distributions will describe the
+position of each event within the metrical cycle. I will then encode this using
+the representation devised earlier in the project and will use samples of the
+jembe and dundun drums to synthetically generate music with the micro-timing of
+Suku.
+
+The final steps of the project will be to perform the evaluation (as described
+below), and write the dissertation.
+
+
+\subsection*{Evaluation}
+
+As this project involves generating music, which is inherently subjective,
+evaluating this will primarily involve performing user studies.
+
+The generative power of the program can be defined as how realistic the
+generated music is for specific musical styles. This can be evaluated by
+generating a given piece of music with varying probability distributions and
+playing these for users with a strong familiarity with the style. The user will
+then be asked to rank them in order of how realistic they seem as pieces of
+music within this style, focusing specifically on the micro-timing. The
+hypothesis would be that the music with the correct distribution for that style
+would seem the most realistic.
+
+For the case study of Suku, Rainer Polak is an expert on Malian jembe music so
+would be an ideal user for the study. Due to the nature of this musical style,
+expertise is required in the style to judge the accuracy of the micro-timing.
+
+The generative power could also be evaluated for swing rhythms. The triplet
+swing (in the ratio 2:1) is a typical swing ratio and an exact distribution can
+be derived for this without the need for a dataset. The generative power can
+then be evaluated for swing as above. Users could easily be recruited for this
+study as most musicians/music students will be familiar with this style of music.
+To constrain this to focus on the timing, the stimulus could be just a drumbeat
+as this removes the effect of pitch and timbre on the user's judgment. This
+maintains good ecological validity because a swung jazz drumbeat will be very
+recognisable by users familiar with the style, despite lacking the other
+instrumental parts typically found in this style.
+
+As an extension, because musical timing is critical in this project its
+responsiveness could also be evaluated. This could be done by measuring the
+additional latency caused by adding this functionality to Sonic Pi, for a range
+of examples, and ensuring this is sufficiently small as not to be detectable by
+humans.
+
+
+
+\section*{Extensions/future work}
+
+An extension to this project could be to gather more data to produce probability
+distributions for other styles, so their micro-timing strategies can be
+reproduced more accurately. In addition to this, further work could be done to
+integrate a way for users to interact with the probability distributions and
+define their own in a GUI built into Sonic Pi. Another extension could be to
+implement controls to increase or decrease style-specificity, allowing the
+probability distributions to be continuously transformed from a generic
+distribution (with no micro-timing) to a style-specific distribution.
+
+
+
+\section*{Success criteria}
+
+This project will be successful if these success criteria are met:
+
+\begin{itemize}
+	\item Implemented a representation of probability distributions for
+style-specific micro-timing
+	\item Implemented a tool to play music in Sonic Pi with probabilistic
+micro-timing
+	\item Conducted a user study to evaluate how realistic the generated music is
+with respect to a specific style
+\end{itemize}
+
+
+
+\section*{Plan of work}
+
+\begin{itemize}
+    \item 16th October -- 5th November (3 weeks)
+    \begin{itemize}
+    	\item Learn how to use Sonic Pi and get familiar with its language and the languages it's written in
+    	\item Start to gain familiarity with Sonic Pi's codebase and its temporal semantics
+    	\item \textbf{Be able to create music in Sonic Pi, and understand how its timing works}
+    \end{itemize}
+    \item 6th November -- 26th November (3 weeks)
+    \begin{itemize}
+    	\item Learn how Sonic Pi works, particularly how it uses SuperCollider
+    	\item Investigate the best way of interacting with Sonic Pi and choose a language to do this in (e.g., a separate application or add to its codebase?)
+    	\item \textbf{Be able to write my own code that interacts with or modifies the functionality of Sonic Pi}
+    \end{itemize}
+    \item 27th November -- 17th December (3 weeks)
+    \begin{itemize}
+    	\item Investigate the best way of representing, inputting, and storing the probability distributions of metrical event occurrences
+    	\item Implement this representation and create some hypothetical distributions for testing
+    	\item \textbf{Be able to encode the required probability distributions for a (hypothetical) style of music and be able to retrieve individual probability values}
+    \end{itemize}
+    \item 18th December -- 7th January (3 weeks)
+    \begin{itemize}
+    	\item Catch up on work from previous milestones, particularly the last one as this is quite involved
+    	\item Break for Christmas, some tidying up of the code can also be done here
+    	\item \textbf{Ensure work is up-to-date and sufficient notes of my progress have been made}
+    \end{itemize}
+    \item 8th January -- 28th January (3 weeks)
+    \begin{itemize}
+    	\item Investigate how to implement micro-timing in Sonic Pi
+    	\item Add a control to use a selected probability distribution to control the micro-timing
+    	\item \textbf{Be able to accurately generate music with micro-timing that uses a given probability distribution}
+    \end{itemize}
+    \item 29th January -- 4th February (1 week)
+    \begin{itemize}
+    	\item Prepare progress report and presentation (dates TBC so this timing is a guess)
+    	\item Catch up on any missed work from the previous milestone
+    	\item \textbf{Submit progress report and give presentation}
+    \end{itemize}
+    \item 5th February -- 18th February (2 weeks)
+    \begin{itemize}
+    	\item Use the data from \cite{jacoby2021} to create a probability distribution for the Malian jembe piece `Suku' empirically
+    	\item Use this and the drum sound samples to synthetically generate this piece of music
+    	\item \textbf{Be able to generate music with micro-timing accurate to this style}
+    \end{itemize}
+    \item 19th February -- 4th March (2 weeks)
+    \begin{itemize}
+    	\item Prepare music and questions for user studies
+    	\item Perform user studies and gather measurements for evaluation
+    	\item \textbf{Have completed all the data gathering for evaluation}
+    \end{itemize}
+    \item 5th March -- 18th March (2 weeks)
+    \begin{itemize}
+    	\item Analyse data from the evaluation and write up the results
+    	\item Add finishing touches and tidy up the implementation
+    	\item \textbf{Finalise code and be prepared to begin writing the dissertation}
+    \end{itemize}
+    \item 19th March -- 22nd April (5 weeks)
+    \begin{itemize}
+    	\item Use the Easter holidays to write the full dissertation
+    	\item Have a draft prepared for the end of the holidays
+    	\item \textbf{Submit a draft of the full dissertation}
+    \end{itemize}
+    \item 23rd April -- 13th May (3 weeks)
+    \begin{itemize}
+    	\item Act on feedback from the draft dissertation and submit the final version
+    	\item Revise for exams
+    	\item \textbf{Final dissertation submitted before the deadline}
+    \end{itemize}
+\end{itemize}
+
+
+
+\section*{Resources}
+
+I will use my personal computer for the development of this project. Its
+specifications are: Intel Core i7-7700K (4.2 GHz), 16GB memory, with over 600GB
+of available storage. In case of failure, I plan to use my personal laptop, or
+use the University MCS\@. I have local backups stored to an external hard drive,
+monthly backups to Google Drive, and I will use GitHub for version control. I
+accept full responsibility for this machine, and I have made contingency plans
+to protect myself against hardware and/or software failure.
+
+While not critical to the implementation, the data from \cite{jacoby2021} will be used to
+generate probability distributions for the case study piece of music. This is
+publicly available at \url{https://doi.org/10.17605/OSF.IO/8WYAV} but I have
+downloaded the data anyway.
+
+
+
+\printbibliography[heading=subbibliography]
+\end{refsection}
+
+
+
+
 
 \end{document}
