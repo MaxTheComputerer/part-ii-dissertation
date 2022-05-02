@@ -21,10 +21,6 @@
 \usepackage{adjustbox}
 % Algorithms
 \usepackage[ruled]{algorithm2e}
-% Verbatim++
-\usepackage{alltt}
-% Text colour
-\usepackage{xcolor}
 % Better verbatim
 \usepackage{fancyvrb}
 % TikZ diagrams
@@ -63,10 +59,7 @@
   }}\!
 }
 
-\definecolor{SPpink}{RGB}{255,20,147}
-\definecolor{SPblue}{RGB}{30,144,255}
-\definecolor{SPorange}{RGB}{255,140,0}
-\definecolor{SPgreen}{RGB}{97,206,60}
+\usemintedstyle{sonicpi}
 
 \begin{document}
 
@@ -95,29 +88,31 @@
 
 \section*{Declaration}
 
-I, [Name] of [College], being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose. I am content for my dissertation to be made available to the students and staff of the University.
+I, Max Johnson of Clare College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose. I am content for my dissertation to be made available to the students and staff of the University.
 
 \bigskip
-\leftline{Signed [signature]}
+\leftline{\textbf{Signed:} Max Johnson}
 
 \medskip
-\leftline{Date [date]}
+\leftline{\textbf{Date:} \today}
 
 
 \newpage
 \chapter*{Proforma}
 
 {\large
-\begin{tabular}{ll}
+\begin{tabularx}{\linewidth}{lX}
 Candidate number:   & \bf 2388B \\
 Project title:      & \bf Musical micro-timing for live coding \\
 Examination:        & \bf Computer Science Tripos -- Part II, July 2022  \\
-Word count:         & \bf N/A \\
-Code line count:    & \bf N/A \\
+Word count:         & \bf TBC \\
+Code line count:    & \bf 1,935\footnotemark[1] \\
 Project originator: & \bf Mark Gotham \\
 Supervisor:         & \bf Mark Gotham \\
-\end{tabular}
+\end{tabularx}
 }
+\footnotetext[1]{Computed with \texttt{cloc}: \url{https://github.com/AlDanial/cloc}}
+\stepcounter{footnote}
 
 
 \section*{Original aims of the project}
@@ -278,13 +273,13 @@ implements its own domain-specific language written in Ruby, using the
 SuperCollider sound synthesis server to produce sounds \cite{aaron2013}. A simple
 Sonic Pi program might look like the following:
 
-\begin{BVerbatim}[commandchars=\\\{\}]
-play \textcolor{SPpink}{:C4}
-sleep(\textcolor{SPblue}{1})
-play \textcolor{SPpink}{:C5}
-sleep(\textcolor{SPblue}{0.5})
-play \textcolor{SPpink}{:C4}
-\end{BVerbatim}
+\begin{minted}{ruby}
+play :C4
+sleep(1)
+play :C5
+sleep(0.5)
+play :C4
+\end{minted}
 
 This plays the note C4 on the current synthesiser, sleeps for one beat, plays C5,
 sleeps for half a beat, then plays C4 again.
@@ -730,7 +725,7 @@ be applied to a note at a given offset (see Section~\ref{applying_micro-timing})
 
 The Metre class is a subclass of MetreTree which acts as a wrapper for the
 hierarchy stored in a MetreTree. It implements functionality allowing a user to
-specify a metre by a time signature string (e.g.\ \verb|`4/4'|) for common metres, or a
+specify a metre by a time signature string (e.g.\ \mintinline{ruby}{'4/4'}) for common metres, or a
 nested list of Rationals representing the hierarchy. It also has a method which
 converts a duration in quarter lengths (the length of one quarter note) to Sonic
 Pi beats.
@@ -798,33 +793,33 @@ for a single bar of \setmetre{4}{4}.
     \centering
     \begin{subfigure}[b]{0.2\textwidth}
         \centering
-        \begin{BVerbatim}[commandchars=\\\{\}]
-play \textcolor{SPpink}{:C4}
-sleep(\textcolor{SPblue}{1})
-play \textcolor{SPpink}{:E4}
-sleep(\textcolor{SPblue}{1})
-play \textcolor{SPpink}{:G4}
-sleep(\textcolor{SPblue}{0.5})
-play \textcolor{SPpink}{:E4}
-sleep(\textcolor{SPblue}{0.5})
-play \textcolor{SPpink}{:C4}
-        \end{BVerbatim}
+        \begin{minted}{ruby}
+play :C4
+sleep(1)
+play :E4
+sleep(1)
+play :G4
+sleep(0.5)
+play :E4
+sleep(0.5)
+play :C4
+        \end{minted}
         \caption{Old}
     \end{subfigure}
     %
     \begin{subfigure}[b]{0.4\textwidth}
         \centering
-        \begin{BVerbatim}[commandchars=\\\{\}]
-use_metre \textcolor{SPgreen}{`4/4'}
+        \begin{minted}{ruby}
+use_metre '4/4'
 
-bar \textcolor{SPorange}{do}
-    add_note \textcolor{SPpink}{:C4}, \textcolor{SPblue}{0}, \textcolor{SPblue}{1}
-    add_note \textcolor{SPpink}{:E4}, \textcolor{SPblue}{0}, \textcolor{SPblue}{1}
-    add_note \textcolor{SPpink}{:G4}, \textcolor{SPblue}{1}, \textcolor{SPblue}{1}
-    add_note \textcolor{SPpink}{:E4}, \textcolor{SPblue}{1}, \textcolor{SPblue}{1}
-    add_note \textcolor{SPpink}{:C4}, \textcolor{SPblue}{0}, \textcolor{SPblue}{1}
-\textcolor{SPorange}{end}
-        \end{BVerbatim}
+bar do
+    add_note :C4, 0, 1
+    add_note :E4, 0, 1
+    add_note :G4, 1, 1
+    add_note :E4, 1, 1
+    add_note :C4, 0, 1
+end
+        \end{minted}
         \caption{New}
     \end{subfigure}
     %
@@ -845,11 +840,11 @@ designed to match the syntax of existing Sonic Pi commands such as \verb'use_fx'
 
 \begin{itemize}
 	\item \verb'use_metre('$m$\verb')' changes the current thread's metre to $m$ (using a thread local variable)
-	\item \verb'with_metre('$m$\verb') do ... end' executes a block of user code with a
+	\item \verb'with_metre('$m$\mintinline{ruby}|) bar do ... end| executes a block of user code with a
 specified metre $m$, then restores the thread's original metre
 \end{itemize}
 
-The \verb'bar do ... end' command creates a new Bar object, stores this to a
+The \mintinline{ruby}|bar do ... end| command creates a new Bar object, stores this to a
 thread local variable, then executes a block of user code. If the Bar object
 still has space remaining after the block has run, the function then sleeps for
 the appropriate time.
@@ -906,7 +901,7 @@ $l=0$ (the beat level) for a metre with three beats. The first beat is played ex
 with no variance. The second beat is early, with normal distribution $(\mu,\sigma)=(-0.3,0.01)$.
 The third beat is very slightly late, with normal distribution $(\mu,\sigma)=(0.001,0)$.
 
-\begin{verbatim}
+\begin{minted}{ruby}
 {
     0 => [
         NormalDistribution.new(0,0),
@@ -914,7 +909,7 @@ The third beat is very slightly late, with normal distribution $(\mu,\sigma)=(0.
         NormalDistribution.new(0.001,0)
     ]
 }
-\end{verbatim}
+\end{minted}
 
 The class also has a test to see if the style is compatible with a given metrical
 hierarchy. A Style is defined as being compatible with a MetreTree if, for each
@@ -1004,7 +999,7 @@ synchronise the Bars on the current `bar number'. This is a counter of the
 number of bars that have occurred since the beginning of playback. The behaviour
 of the Bar class is as follows:
 
-\begin{alltt}
+\begin{minted}{ruby}
 class Bar
 
     def initialize()
@@ -1017,14 +1012,14 @@ class Bar
         __thread_locals.set(:sonic_pi_bar_number, current_bar_number)
     end
 end
-\end{alltt}
+\end{minted}
 
 If this is the first bar in the thread, the Bar object will request bar number 0
 from the metre, otherwise it will request the next bar number in sequence. The
 metre returns the actual current bar number, which is then stored in the thread
 for the next bar to use.
 
-\begin{alltt}
+\begin{minted}{ruby}
 class SynchronisedMetre < Metre
 
     def initialize()
@@ -1043,7 +1038,7 @@ class SynchronisedMetre < Metre
         return @current_bar_number
     end
 end
-\end{alltt}
+\end{minted}
 
 The SynchronisedMetre's \verb'request_bar()' method determines the correct current bar
 number. If the requested number is greater than its internal current number,
@@ -1357,6 +1352,7 @@ go.
     \end{split}
     \label{eq:duration_to_level_multiplier}
 \end{equation}
+\newpage
 
 
 
@@ -1846,6 +1842,7 @@ Manjanin with the data-derived micro-timing. In addition to providing much
 useful advice, Rainer Polak also gave an expert opinion on the full recording,
 describing it as ``realistic and beautiful''. Therefore, despite the unfamiliar
 participants in the study struggling to identify the expected pattern, I conclude that the implementation can successfully produce realistic music.
+\newpage
 
 
 
@@ -1860,7 +1857,7 @@ any loss.
 
 Figure~\ref{fig:musicxml_before} shows a short line of music written in Western music notation,
 representing a MusicXML file. This was then converted to Sonic Pi code (shown in
-APPENDIX), then converted back to MusicXML. The final result is
+Appendix~\ref{appendix_code_metre_evaluation}), then converted back to MusicXML. The final result is
 shown in Figure~\ref{fig:musicxml_after}. The resulting music sounds identical, and the changes in
 metre are preserved. The only difference is a slight change in the beaming in
 bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly.
