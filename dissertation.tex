@@ -155,7 +155,7 @@ criteria set out in my project proposal and one suggested extension.
 \section{Motivation} \label{motivation}
 
 Micro-timing in music refers to small deviations in the timing of notes from
-their exact, grid-like positions in the metre (see Section~\ref{metre_background} for details). These
+their exact, grid-like positions in the metre \cite{london2012} (see Section~\ref{metre_background} for details). These
 deviations occur naturally in all human performances, but when they occur
 systematically, they make an important contribution to what defines a musical
 style. Therefore, this a very valuable feature when creating realistic music.
@@ -167,7 +167,7 @@ creativity, such as by applying the micro-timing strategies of one style to
 music from another style.
 
 Music live coding (Section~\ref{live_coding_background}) is a way of creating and performing music by writing
-and modifying code in real time. This was an interesting area to focus on for
+and modifying code in real time \cite{magnusson2011}. This was an interesting area to focus on for
 this project because the nature of live coding allows for creative applications
 of micro-timing, such as by adjusting the micro-timing during a performance.
 
@@ -180,23 +180,24 @@ has realistic micro-timing.
 
 \section{Related work} \label{related_work}
 
+The main areas of related work to this project are the analysis of micro-timing in styles of music, generating music with micro-timing, and representations of metre in live coding languages.
+
+The micro-timing of different musical styles has been analysed extensively in related work. One example is Bengtsson and Gabrielsson's \cite{bengtsson1977} analysis of Viennese waltz recordings, which demonstrated a long-short-medium pattern in the length of its beats. Friberg and Sundström \cite{friberg2002} performed an analysis of the long-short pattern of swung eighth notes in jazz music. Finally, Polak \cite{polak2010,london2017,jacoby2021} has done much work on the micro-timing of jembe music from Mali (see Section~\ref{case_studies}).
+
 Creating music with synthetic micro-timing has been explored as part of music
 information retrieval (MIR) for a long time. This is often attempting to model
 human-like expressive timing \cite{bilmes1993}. Oore et al.\ \cite{oore2020} used an
 LSTM-based recurrent neural network to generate piano music with expressive
 timing and dynamics. Huang and Yang \cite{huang2020} use a transformer model with
-metrical constraints to automatically compose pop music. The FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live takes a different approach, and gives the user
+metrical constraints to automatically compose pop music. However, there is little previous research on implementing user-defined systematic micro-timing as in this project. A commercial product which has this functionality is the FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live. It gives the user
 control over swing and other micro-timing deviations, including a probabilistic
 element.
 
 Most live coding languages lack a full hierarchical representation of musical
 metre (Section~\ref{metre_background}), typically only featuring a concept of beats and time signatures.
-For example, the Max/MSP language uses its transport object to allow
+For example, the commercial Max/MSP language uses its \verb'transport' object to allow
 access to bar and beat numbers for the current time signature. Gibber
-\cite{roberts2012} emphasises a \setmetre{4}{4} time signature by default, and allows users to
-trigger music to play at the beginning of a bar. An exception is McLean's Tidal
-Cycles \cite{mclean2010} which uses a cyclic notion of time which can be subdivided
-to achieve more complex hierarchies. Tidal also has a \verb'swingBy' function\footnote{\url{https://tidalcycles.org/docs/patternlib/tour/time/}}, which
+\cite{roberts2012} emphasises a \setmetre{4}{4} time signature by default, and allows users to trigger music to play at the beginning of a bar. An exception is McLean's open-source Tidal Cycles \cite{mclean2010} which uses a cyclic notion of time that can be subdivided to achieve more complex hierarchies. Tidal also has a \verb'swingBy' function\footnote{\url{https://tidalcycles.org/docs/patternlib/tour/time/}}, which
 implements a simple jazz swing micro-timing effect.
 
 In summary, though there has been much research into the analysis of
@@ -226,15 +227,18 @@ techniques used throughout.
 
 \subsection{Musical metre} \label{metre_background}
 
-A beat is a regularly occurring pulse in music. This is usually the pulse you
-might tap your foot along to when listening to a piece of music. Musical metre
+A beat is a regularly occurring pulse in music \cite{omt2021}. This is usually the pulse you might tap your foot along to when listening to a piece of music. Musical metre
 describes the ways in which beats are grouped and divided within recurring
-cycles. This forms different metrical levels within a hierarchy. Division levels
-are ones where the beat has been divided into more, shorter durations. Multiple
-levels are ones where the beats are grouped into fewer, longer durations. Figure~\ref{fig:metre_hierarchy_example} 
+cycles. This forms different metrical levels within a hierarchy \cite{london2012}:
+
+\begin{itemize}
+    \item Division levels are those where the beat has been divided into more, shorter durations.
+    \item Multiple levels are those where the beats are grouped into fewer, longer durations.
+\end{itemize}
+
+Figure~\ref{fig:metre_hierarchy_example} 
 shows the beat level, and some of the division and multiple levels for a simple \setmetre{4}{4} time signature, as well as a tree representation of the metrical hierarchy.
-A metre is `simple' if its first division level splits the beat into two, and
-`compound' if it splits into three \cite{omt2021}.
+Western classical definitions define a metre as `simple' if its first division level splits the beat into two, and `compound' if it splits into three \cite{omt2021}.
 
 \begin{figure}
     \centering
@@ -243,17 +247,23 @@ A metre is `simple' if its first division level splits the beat into two, and
     \label{fig:metre_hierarchy_example}
 \end{figure}
 
+\subsubsection{Micro-timing} \label{micro-timing_background}
+
 Every note in a piece of music occurs at a particular metrical position, but
 music performed by humans often deviates from these mechanically even timings
 \cite{london2012}. The ways in which these deviations occur contribute significantly
-to what we call musical style by producing micro-timing effects. Different
+to what we call musical style by producing micro-timing effects.
+
+Different
 musical styles have different micro-timing strategies. A common example is the
 long-short pattern in swing rhythms, where every other eighth note (the first
 division level) is slightly delayed. This timing information is typically lost
 in music notation, so musicians have to use
 their knowledge and experience of the style to inform their performance of the
 micro-timing. This is formalised in Justin London's Many Meters Hypothesis
-\cite{london2012}. A metre without any micro-timing is said to be `isochronous',
+\cite{london2012}.
+
+A metre without any micro-timing is said to be `isochronous',
 which means the metric events at each level are equally spaced in time.
 
 
@@ -264,13 +274,12 @@ modifying code in real time. The performer typically projects their code onto a
 screen for an audience to follow along with \cite{magnusson2011}. The liveness of the
 performance is important -- it is argued that the musician must directly
 interact with the running algorithms for it to be truly considered live coding
-\cite{collins2011}. Otherwise, there is little difference between this and playing a
-recording of synthesised music.
+\cite{collins2011}. If it were not for this, there would be little difference between live coding and playing a prerecorded piece of music, because much of the performance element would be lost.
 
-Sonic Pi is a popular live coding language and IDE created by Sam Aaron, which
+Sonic Pi \cite{aaron2013} is a popular live coding language and IDE created by Sam Aaron, which
 was designed as an educational tool for teaching programming in schools. It
 implements its own domain-specific language written in Ruby, using the
-SuperCollider sound synthesis server to produce sounds \cite{aaron2013}. A simple
+SuperCollider sound synthesis server to produce sounds. A simple
 Sonic Pi program might look like the following:
 
 \begin{minted}{ruby}
@@ -316,11 +325,11 @@ consistent micro-timing strategy \cite{polak2010}, and Malian drummers have been
 have one of the lowest levels of timing variability between performers in the
 world \cite{clayton2020}. Compared with other styles of music, jembe music is
 relatively constrained in terms of its pitch, timbre, and number of instruments,
-which allows for a clear focus on timing.
+which allows for a clear focus on timing. The strength of existing research \cite{polak2010,london2017,jacoby2021} into the micro-timing of jembe music is another reason why it makes a good case study.
 
 The Viennese waltz is a style of music intended for ballroom dancing. It is a
 fast waltz in \setmetre{3}{4} at around 180 beats per minute (bpm) and is performed by a
-classical Western orchestra. It has a characteristic short-long-long
+classical Western orchestra. It has a characteristic short-long-medium
 micro-timing pattern for the length of its beats \cite{bengtsson1974,bengtsson1977}.
 
 
@@ -383,10 +392,7 @@ and without trial-and-error.
 
 One approach I considered was to intercept Open Sound Control (OSC) network
 messages between Sonic Pi and SuperCollider and adjust the timing of the event
-contained in the message. An advantage of this would be that my code would be relatively
-unrestricted in which language it was written in, which would avoid needing to
-spend time learning a new language. A small amount of Sonic Pi code would still
-need to be modified, however, to redirect its OSC messages.
+contained in the message. This approach would put very few constraints on the choice of programming language for the project because the code would run independently of Sonic Pi, and would only need to support the OSC protocol. A small amount of Sonic Pi code would still need to be modified, however, to redirect its OSC messages.
 
 The alternative was to build my code into the Sonic Pi codebase. This would
 require me to use Ruby, however this approach works at a higher level so Sonic Pi can
@@ -404,11 +410,10 @@ These advantages led me to choose this approach for my implementation.
 The main implementation of this project was written in the Ruby programming
 language because it was an extension of Sonic Pi which is written in Ruby. The
 data analysis was done in Python due to its excellent support for data science
-and visualisation. The popular pandas, Matplotlib, NumPy, and SciPy Python
-libraries were used for this. For automatic beat tracking, I used the librosa
-and libfmp Python libraries, and Sonic Visualiser for manual corrections.
-MusicXML files were created with the MuseScore music notation software and
-processed via the \verb'music21' Python library.
+and visualisation. The popular pandas \cite{reback2020,mckinney2010}, Matplotlib \cite{hunter2007}, NumPy \cite{harris2020}, and SciPy \cite{virtanen2020} Python
+libraries were used for this. For automatic beat tracking, I used the librosa \cite{mcfee2021} and libfmp \cite{mueller2021} Python libraries, and Sonic Visualiser \cite{cannam2010} for manual corrections.
+MusicXML \cite{good2001} files were created with the MuseScore music notation software and
+processed via the \verb'music21' \cite{cuthbert2010} Python library.
 
 Development of the project was done using the Visual Studio Code editor because
 it has good support for different languages, debugging, and version control.
@@ -433,7 +438,7 @@ Due to the musical nature of this project, most of the testing was done by
 evaluating some simple program in Sonic Pi and listening to the output.
 Additionally, I wrote a series of unit tests using Sonic Pi's built-in testing
 framework. These tests ensured the metre implementation functioned correctly for
-metres with both simple and complex hierarchies.
+metres with a wide range of possible hierarchies.
 
 
 
@@ -449,7 +454,7 @@ within a metrical context, the style-specific micro-timing itself, and a method
 of multi-threaded synchronisation. The second main component is the data
 analysis which is used to generate realistic micro-timing for musical styles.
 This is done primarily for Malian jembe, but also for Viennese waltz in
-preparation for the evaluation. The final component is a pair of converters
+preparation for the evaluation and to check generalisability. The final component is a pair of converters
 between the MusicXML file format and my extended Sonic Pi language, also
 implemented for use in the evaluation.
 
@@ -473,7 +478,7 @@ representation of a single metrical cycle.
 
 The first approach was to use a simple list of integers to represent a metre,
 where each integer corresponds to a beat, and the value of each integer is the
-number of pulses that beat is divided into (as used by Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
+number of pulses that beat is divided into (one of the representations used by Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
 beats are subdivided into three, and the second two beats are subdivided into
 two. For lower metrical levels (two or more subdivisions of the beat level), it
 was assumed that they divide into two.
@@ -481,7 +486,7 @@ was assumed that they divide into two.
 This form had the advantage of being a simple and compact representation which
 handled common time signatures (such as \setmetre{4}{4} or \setmetre{6}{8}) well. However, this approach
 does not generalise well to all possible metres, so I discarded this in favour
-of a tree structure, as this captures the full hierarchy more easily.
+of a tree structure (also used by Gotham \cite{gotham2015}), as this captures the full hierarchy more easily.
 
 
 \subsection{Metrical hierarchy as trees} \label{metrical_hierarchy}
@@ -534,8 +539,7 @@ A MetreLeaf object is the leaf node of the metrical tree structure. It has an
 instance variable fraction which is a Rational (a Ruby object for storing a
 rational number as a simplified fraction) which represents the duration of the
 MetreLeaf in the metre. This is expressed as a fraction of a whole note. For
-example, a leaf node with the duration of a quarter note (also known as a
-crotchet) will have the value $\frac{1}{4}$.
+example, a leaf node with the duration of a quarter note\footnote{Known as a quarter note in American English, and a crotchet in British English. American English note names are used here because of their clear relation to the notes' durations.} will have the value $\frac{1}{4}$.
 
 The class contains a \verb'subdivide()' method, which divides the MetreLeaf by two a
 given number of times, $s$. It returns a new MetreTree with $2^s$ MetreLeaf children, each of value $f/2^s$ where $f$ is the fraction of the original MetreLeaf.
@@ -563,7 +567,7 @@ only MetreLeafs, meaning there is no hierarchy (e.g.\ $\left[\frac{1}{8},\frac{1
 This method is split into two algorithms:
 \begin{itemize}
     \item \verb'get_division_level()' computes the sequence for division levels ($l>0$), and the beat level ($l=0$)
-	\item \verb'get_multiple_level()' estimates a possible sequence for multiple levels ($l<0$)
+	\item \verb'get_multiple_level()' computes a possible sequence for multiple levels ($l<0$)
 \end{itemize}
 
 Algorithm~\ref{alg:getDivisionLevel} shows the \verb'get_division_level()' algorithm. For each child in the
@@ -614,7 +618,7 @@ level.
 
 The \verb'get_multiple_level()' algorithm performs an estimate of the structure of
 higher metrical levels by clustering nodes together. It is an estimate because this information is not in the
-MetreTree's representation of the metre. The algorithm recursively clusters nodes until
+MetreTree's representation of the metre, so is just one possibility for the higher structure. The algorithm recursively clusters nodes until
 the desired metrical level $l$ is reached. The number of nodes combined in each cluster is
 determined by the smallest prime factor of the number of nodes at the level below. For
 example, if level $l+1$ has four nodes, they will be clustered in groups of two. If it
@@ -622,8 +626,8 @@ has nine nodes, they will be clustered in groups of three.
 
 An important consideration when implementing the \verb'get_level()' method was to
 maximise its efficiency, because it is called at least once per note. The
-running time of the algorithm is proportional to the number of MetreLeafs in the
-hierarchy, so to improve this I implemented a cache of metrical levels for each
+running time of the algorithm is $O(\left\lvert l\right\rvert)$, where $\left\lvert l\right\rvert$ is the number of MetreLeafs in the
+hierarchy. To improve the efficiency, I implemented a cache of metrical levels for each
 MetreTree object to store the expensive computations for reuse.
 
 Some examples of the output of \verb'get_level()' for the following hierarchy are shown in Table~\ref{table:get_level}:
@@ -733,7 +737,7 @@ Pi beats.
 
 \subsection{Bar class} \label{bar_class}
 
-A bar (or measure) is a common term used in Western music theory for a single
+A bar\footnote{Known as a bar in British English, and a measure in American English.} is a common term used in Western music theory for a single
 metric cycle. The Bar class is a representation of this, and each instance of it
 has an associated metre. A Bar object is responsible for:
 \begin{itemize}
@@ -1449,7 +1453,7 @@ Figure~\ref{fig:waltz_histogram} shows the results for the waltz dataset (Sectio
 use the first beat as the definition for the start of the cycle, so every beat 1
 has an offset of 0, which is why its histogram has no variance. The early onset
 of the second beat can be clearly seen in the plot ($\mu=-0.0743$, $\sigma=0.0795$). A
-one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5$, $p=0.000$). Beats 1 and 3 show no significant deviation from the metrical grid, so a short-long-long pattern (SLL) is observed.
+one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5$, $p=0.000$). Beats 1 and 3 show no significant deviation from the metrical grid, so a short-long-medium pattern (SLM) is observed.
 
 \begin{figure}[ht]
     \centering
@@ -1514,7 +1518,7 @@ implementation being able to produce music with realistic micro-timing.
 Micro-timing patterns in this study are given as strings representing the
 relative length of each beat/pulse as short (S), medium (M), or long (L). The
 data analysis results (Section~\ref{micro-timing_estimation_results}) showed an SML pattern for the micro-timing in
-jembe music, and an SLL pattern for the Viennese waltz. Therefore, we would
+jembe music, and an SLM pattern for the Viennese waltz. Therefore, we would
 expect these ``correct'' patterns to be scored highest if the hypotheses are
 true.
 
@@ -1626,7 +1630,7 @@ Table 3 in Neuhoff et al.\ contains similar
 pulse-length data to their Table 4 (which I used for jembe above) but uses a different
 selection of timing patterns designed to test the importance of a short first
 pulse. Consequently, these patterns are also suitable for application to the
-beat lengths in the waltz. The final selection of timing patterns was SLL, LSS,
+beat lengths in the waltz. The final selection of timing patterns was SLM, LSS,
 SSL, SLS, and isochronous.
 
 Converting these to offsets was done in the same way as for jembe (Equation~\ref{eq:proportion_to_offset}).
@@ -1767,10 +1771,10 @@ waltz section of the study.
         & \multicolumn{1}{c}{$t$}
         & \multicolumn{1}{c}{$p$} \\
         \midrule
-        SLL -- Iso & $-2.39$ & $.026$ & $-4.28$ & $.001$ & $0.81$ & $\mathbf{.448}$ \\
-        SLL -- SSL & $-6.15$ & $.000$ & $-5.22$ & $.000$ & $-3.29$ & $.017$ \\
-        SLL -- LSS & $-7.13$ & $.000$ & $-6.26$ & $.000$ & $-4.58$ & $.004$ \\
-        SLL -- SLS & $-6.26$ & $.000$ & $-8.47$ & $.000$ & $-1.44$ & $\mathbf{.200}$ \\
+        SLM -- Iso & $-2.39$ & $.026$ & $-4.28$ & $.001$ & $0.81$ & $\mathbf{.448}$ \\
+        SLM -- SSL & $-6.15$ & $.000$ & $-5.22$ & $.000$ & $-3.29$ & $.017$ \\
+        SLM -- LSS & $-7.13$ & $.000$ & $-6.26$ & $.000$ & $-4.58$ & $.004$ \\
+        SLM -- SLS & $-6.26$ & $.000$ & $-8.47$ & $.000$ & $-1.44$ & $\mathbf{.200}$ \\
         Iso -- SSL & $1.44$ & $\mathbf{.165}$ & $0.00$ & $\mathbf{1}$ & $3.06$ & $.022$ \\
         Iso -- LSS & $2.86$ & $.009$ & $1.58$ & $\mathbf{.135}$ & $2.97$ & $.025$ \\
         Iso -- SLS & $-3.32$ & $.003$ & $-1.96$ & $\mathbf{.068}$ & $-4.50$ & $.004$ \\
@@ -1783,12 +1787,12 @@ waltz section of the study.
     \label{table:waltz_t-test}
 \end{table}
 
-The timing pattern with the greatest overall mean score was SLL ($\mu=3.83$), which
+The timing pattern with the greatest overall mean score was SLM ($\mu=3.83$), which
 the \textit{t}-test found to be significantly higher than any other pattern. Therefore,
 Hypothesis~\ref{hypothesis_1} is supported by the data for the waltz style. When looking
-at musicians, this same trend can be seen, with SLL being scored much higher
+at musicians, this same trend can be seen, with SLM being scored much higher
 than all others. Non-musicians, however, scored the isochronous pattern higher
-than SLL, although the difference wasn't statistically significant.
+than SLM, although the difference wasn't statistically significant.
 
 The isochronous pattern had the second-highest overall mean score ($\mu=3.13$),
 although this was not significantly different to SSL ($\mu=2.74$).
@@ -1798,7 +1802,7 @@ The patterns with the lowest overall mean scores were SLS ($\mu=2.26$) and LSS (
 when looking at musicians and non-musicians individually.
 
 A one-tailed \textit{t}-test between musicians' and non-musicians' scores found that
-musicians were significantly more likely to think SLL was a good fit than
+musicians were significantly more likely to think SLM was a good fit than
 non-musicians ($t=2.07, p=0.025$). It similarly found that musicians were
 significantly less likely to think the isochronous pattern was a good fit than
 non-musicians ($t=-2.05, p=0.027$). Therefore, Hypothesis~\ref{hypothesis_2} is supported by the
@@ -1809,7 +1813,7 @@ data for the waltz style.
 
 The results for the Viennese waltz style have shown that my implementation is
 capable of producing music with realistic micro-timing, with participants
-showing a significant preference for the SLL timing pattern which used
+showing a significant preference for the SLM timing pattern which used
 data-derived micro-timing. The preference is particularly clear in musicians,
 which is expected as they have more experience in this area.
 
