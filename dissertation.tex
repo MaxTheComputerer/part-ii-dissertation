@@ -500,35 +500,64 @@ designing my representation \cite{ariza2010}.
 
 The tree structure is implemented by the MetreLeaf and MetreTree classes (see
 Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default nesting of these objects
-for a \setmetre{4}{4} time signature, and each object's duration. Note the duration of a
-parent node is the sum of the durations of its children.
+for both a \setmetre{4}{4} time signature and an unconventional example metre, and each object's duration. Note the duration of a parent node is the sum of the durations of its children.
 
 \begin{figure}[ht]
     \centering
-    \resizebox{\linewidth}{!}{
-        \begin{forest}
-            for tree=draw,
-            [{\small \bfseries Metre \\ $d=1$}
-                [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+    \begin{subfigure}{\linewidth}
+        \centering
+        \resizebox{\linewidth}{!}{
+            \begin{forest}
+                for tree=draw,
+                [{\small \bfseries Metre \\ $d=1$}
+                    [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                    ]
+                    [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                    ]
+                    [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                    ]
+                    [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                    ]
                 ]
-                [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+            \end{forest}
+        }
+        \caption{Object hierarchy for \setmetre{4}{4}}
+        \label{fig:tree_object_hierarchy_4_4}
+    \end{subfigure}
+    \begin{subfigure}{\linewidth}
+        \centering
+        \resizebox{0.7\linewidth}{!}{
+            \begin{forest}
+                for tree=draw,
+                [{\small \bfseries Metre \\ $d=\frac{11}{8}$}
+                    [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                    ]
+                    [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{16}$}]
+                        [{\small \bfseries MetreTree \\ $d=\frac{3}{16}$}
+                            [{\small \bfseries MetreLeaf \\ $d=\frac{1}{16}$}]
+                            [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                        ]
+                    ]
                     [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
+                    [{\small \bfseries MetreLeaf \\ $d=\frac{3}{4}$}]
                 ]
-                [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                ]
-                [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                ]
-            ]
-        \end{forest}
-    }
-    \caption{An example of how MetreTree and MetreLeaf objects are nested to construct a metrical hierarchy for \setmetre{4}{4}. The total duration $d$ of each node is also displayed, and the duration of a parent node is the sum of the durations of its children.}
+            \end{forest}
+        }
+        \caption{Object hierarchy for an unconventional metre}
+        \label{fig:tree_object_hierarchy_unconventional}
+    \end{subfigure}
+    \caption{Two examples of how MetreTree and MetreLeaf objects are nested to construct metrical hierarchies for two different metres. The total duration $d$ of each node is also displayed, and the duration of a parent node is the sum of the durations of its children.}
     \label{fig:tree_object_hierarchy}
 \end{figure}
 
@@ -550,7 +579,7 @@ given number of times, $s$. It returns a new MetreTree with $2^s$ MetreLeaf chil
 A MetreTree object represents the hierarchical tree or subtree of a metre. The
 instance variable \verb'sequence' is an ordered list containing any combination of
 MetreLeaf and other MetreTree objects representing this node's children. For
-example, the previous example hierarchy in Figure~\ref{fig:tree_object_hierarchy} could also be written in list form as:
+example, the previous example hierarchy in Figure~\ref{fig:tree_object_hierarchy_4_4} could also be written in list form as:
 \[\left[\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right]\right]\]
 Each list is a
 MetreTree, and each fraction is a MetreLeaf. The MetreTree class contains
@@ -630,13 +659,13 @@ running time of the algorithm is $O(\left\lvert l\right\rvert)$, where $\left\lv
 hierarchy. To improve the efficiency, I implemented a cache of metrical levels for each
 MetreTree object to store the expensive computations for reuse.
 
-Some examples of the output of \verb'get_level()' for the following hierarchy are shown in Table~\ref{table:get_level}:
+Some examples of the output of \verb'get_level()' for the following unconventional hierarchy (from Figure~\ref{fig:tree_object_hierarchy_unconventional}) are shown in Table~\ref{table:get_level}:
 \[
     \left[
         \left[\frac{1}{8},\frac{1}{8}\right],
         \left[
-            \frac{1}{8},
-            \left[\frac{1}{16},\frac{1}{16}\right]
+            \frac{1}{16},
+            \left[\frac{1}{16},\frac{1}{8}\right]
         \right],
         \frac{1}{8},
         \frac{3}{4}
@@ -650,15 +679,15 @@ Some examples of the output of \verb'get_level()' for the following hierarchy ar
         \hline
         $l$     & \verb'get_level'$(l)$ \\
         \hline
-        $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{3}{16},\frac{3}{16},\frac{3}{16},\frac{3}{16} \right]$ \\
-        $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{1}{16},\frac{3}{8},\frac{3}{8} \right]$ \\
+        $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{1}{16},\frac{1}{8},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{3}{16},\frac{3}{16},\frac{3}{16},\frac{3}{16} \right]$ \\
+        $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{3}{16},\frac{1}{16},\frac{1}{16},\frac{3}{8},\frac{3}{8} \right]$ \\
         $0$     & $\displaystyle \left[ \frac{1}{4},\frac{1}{4},\frac{1}{8},\frac{3}{4} \right]$ \\
         $-1$    & $\displaystyle \left[ \frac{1}{2},\frac{7}{8} \right]$ \\
         $-2$    & $\displaystyle \left[ \frac{11}{8} \right]$ \\ [1ex]
         \hline
     \end{tabular}
     \renewcommand{\arraystretch}{1.0}
-    \cprotect\caption{Examples of the output of \verb'get_level'$(l)$ at different metrical levels $l$ for the hierarchy $[[1/8,1/8],[1/8,[1/16,1/16]],1/8,3/4]$. Note how level $l=-1$ is formed by the clustering of level $l=0$.}
+    \cprotect\caption{Examples of the output of \verb'get_level'$(l)$ at different metrical levels $l$ for the hierarchy $[[1/8,1/8],[1/16,[1/16,1/8]],1/8,3/4]$. Note how level $l=-1$ is formed by the clustering of level $l=0$.}
     \label{table:get_level}
 \end{table}
 
@@ -729,8 +758,8 @@ be applied to a note at a given offset (see Section~\ref{applying_micro-timing})
 
 The Metre class is a subclass of MetreTree which acts as a wrapper for the
 hierarchy stored in a MetreTree. It implements functionality allowing a user to
-specify a metre by a time signature string (e.g.\ \mintinline{ruby}{'4/4'}) for common metres, or a
-nested list of Rationals representing the hierarchy. It also has a method which
+specify a metre by a time signature string (e.g.\ \verb'4/4') for common metres, or a
+nested list of Rationals representing the hierarchy (e.g.\ \verb'[[1/8r,1/8r],[1/8r,[1/16r,1/16r]],1/8r,3/4r]'). It also has a method which
 converts a duration in quarter lengths (the length of one quarter note) to Sonic
 Pi beats.
 
