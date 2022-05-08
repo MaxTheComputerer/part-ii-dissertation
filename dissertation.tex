@@ -298,6 +298,8 @@ block of code in a loop in a new thread. This multi-threading allows multiple in
 of multiple threads and long execution time, Sonic Pi uses sophisticated
 ``virtual time'' functionality behind-the-scenes \cite{aaron2014}.
 
+Another Sonic Pi command that is important to this project is \verb'time_warp'. This executes a given block of code with a specified timing shift. Positive shift values execute the block with a delay, and negative values execute it early.
+
 One drawback of Sonic Pi is that it currently doesn't have a built-in notion of
 metre or style-specific micro-timing, which is what this project addresses.
 
@@ -767,7 +769,7 @@ Pi beats.
 \subsection{Bar class} \label{bar_class}
 
 A bar\footnote{Known as a bar in British English, and a measure in American English.} is a common term used in Western music theory for a single
-metric cycle. The Bar class is a representation of this, and each instance of it
+metric cycle\footnote{A more precise definition would account for \textit{hypermetre}, where bars occur at the beat level \cite{neal2000}, but this is not required here.}. The Bar class is a representation of this, and each instance of it
 has an associated metre. A Bar object is responsible for:
 \begin{itemize}
 	\item Keeping track of the playback position through the cycle
@@ -966,8 +968,11 @@ a Sonic Pi program sounds the same each time it is run \cite{aaron2016}.
 
 When a user sets a metre with the \verb'use_metre' or \verb'with_metre' commands, they can
 specify an optional second argument as either a Style object or the name of a
-style to be looked up. This causes all music played with that metre to use the
-micro-timing of the chosen style.
+style to be looked up, as shown below. This causes all music played with that metre to use the micro-timing of the chosen style.
+\begin{minted}{ruby}
+use_metre '12/8', :jembe
+use_metre '4/4', Style.new("example", {0 => [...]})
+\end{minted}
 
 At the start of each new bar, the Metre object samples new values from the
 Style's probability distributions. When a note is played inside the bar, the
@@ -977,13 +982,12 @@ from the Metre. To calculate this, the Metre object calls its
 values from each level to use. The individual timing contributions of each
 metrical level are summed to produce an overall timing shift for the
 note. A positive value means the note should be played slightly late; a negative
-value means slightly early. This is returned to \verb'add_note' which then uses Sonic Pi's \verb'time_warp' function to adjust the timing of the call to \verb'play'.
+value means slightly early. This is returned to \verb'add_note' which then uses Sonic Pi's \verb'time_warp' function (see Section~\ref{live_coding_background}) to adjust the timing of the call to \verb'play'.
 
 For example, if the sampled timings for each level are:
 \[ T=[0\Rightarrow[0,0.1],1\Rightarrow[0.03,0,0,-0.02]] \]
 and the metrical level indices are $L=[0\Rightarrow1,1\Rightarrow3]$, then the timing shift would be
 calculated by Equation~\ref{eq:micro-timing_sum_example}:
-
 \begin{equation}
     \begin{split}
         t &= \sum_{i \in T.\mathrm{keys}} T[i][L[i]] \\
@@ -1155,33 +1159,33 @@ The datasets supply the following data:
 
 \subsection{Micro-timing estimation} \label{jembe_micro-timing}
 
-The pieces of jembe music in the dataset use a metre with four beats, each of
+The pieces of jembe music in the dataset use a metre\footnote{See Polak \cite{polak2010} for an ethnographically sensitive discussion of the extent to which `metric location' applies in this context.} with four beats, each of
 which divides into three, for a total of 12 metric events at the first division
-level (often notated as \setmetre{12}{8}). It is at this level, referred to as the `pulse', that the micro-timing occurs.
+level (\setmetre{12}{8} in Western classical notation). It is at this level, referred to as the `pulse', that the micro-timing occurs.
 
 Each event at the pulse level has a position in the cycle at which a note would
-occur if it were isochronous. The offset from this position describes the
-micro-timing of a note, and this is what is stored in the probability
-distributions described in Section~\ref{style_class}. Equation~\ref{eq:offset_from_phase} shows how the offset is calculated from the phase given by the datasets.
+occur if it were isochronous (the \textit{categorical} timing). The displacement from this position describes the
+micro-timing (or \textit{expressive} timing) of a note, and this is what is stored in the probability
+distributions described in Section~\ref{style_class}. Equation~\ref{eq:displacement_from_phase} shows how the displacement is calculated from the phase given by the datasets.
 
 \begin{equation}
-    \textnormal{offset} = \frac{(\textnormal{phase} \times \textnormal{beat division}) - \textnormal{metric location}}{2}
-    \label{eq:offset_from_phase}
+    \textnormal{displacement} = \frac{(\textnormal{phase} \times \textnormal{beat division}) - \textnormal{metric location}}{2}
+    \label{eq:displacement_from_phase}
 \end{equation}
 
 The phase is multiplied by the beat division (in this case, 3) to convert it
 into pulse units. The metric location at the pulse level (an integer from 0 to 11)
-is subtracted to get the offset. The final division by two converts the offset
+is subtracted to get the displacement. The final division by two converts the displacement
 into quarter lengths (because each pulse unit is an eighth length).
 
-Once the offset has been calculated for each drum stroke, I was then able to
-estimate the distribution of offsets for each of the twelve metric locations. I
+Once the displacement has been calculated for each drum stroke, I was then able to
+estimate the distribution of displacements for each of the twelve metric locations. I
 considered two types of approach for this probability density estimation:
 
 \begin{itemize}
-	\item Kernel density estimation (non-parametric) -- applies smoothing to the
+	\item Kernel density estimation (KDE) (non-parametric) -- applies smoothing to the
 data to fit an arbitrary distribution
-	\item Maximum likelihood estimation (parametric) -- choose an existing
+	\item Maximum likelihood estimation (MLE) (parametric) -- choose an existing
 distribution to fit and estimate the parameters which best fit the data
 \end{itemize}
 
@@ -1194,11 +1198,8 @@ without the need for data.
 
 For this scenario, I chose to use MLE to fit a normal distribution to the data.
 A normal distribution was suitable because the data was assumed to be estimating
-a theoretical true value of the offset. A normal distribution requires two
-parameters: the mean, $\mu$, and the standard deviation, $\sigma$. It can be shown that the
-maximum likelihood estimator $\hat{\mu}$ for the population mean is the sample mean $\bar{x}$,
-and the estimator $\hat{\sigma}$ for the population standard deviation is the sample
-standard deviation $s$ \cite{dekking2005}. The calculation of $s$ uses Bessel's
+a theoretical true value of the displacement. A normal distribution requires two
+parameters: the mean, $\mu$, and the standard deviation, $\sigma$. It can be shown that the maximum likelihood estimator $\hat{\mu}$ for the population mean is the sample mean $\bar{x}$, and the estimator $\hat{\sigma}$ for the population standard deviation is the sample standard deviation $s$ \cite{dekking2005}. The calculation of $s$ uses Bessel's
 correction to get an unbiased estimator of $\hat{\sigma}$ \cite{upton2014}.
 
 
@@ -1279,7 +1280,7 @@ I first considered using the Ballroom dataset \cite{gouyon2006}, which contains
 annotations of the beats exists \cite{krebs2013}. However, when I listened to the
 recordings, I didn't notice any micro-timing. To test my suspicions, I performed
 the micro-timing analysis described in Section~\ref{waltz_micro-timing} and then conducted a
-one-sample \textit{t}-test. This tests whether the sample mean of the offset of the
+one-sample \textit{t}-test. This tests whether the sample mean of the displacement of the
 second beat is statistically significantly different from 0 (the case where
 there is no micro-timing). At the 5\% significance level, there were very few
 recordings which had any significant micro-timing, so this dataset was deemed
@@ -1310,19 +1311,18 @@ dynamic programming approach from Müller's book on the Fundamentals of Music Pr
 small manual corrections, the beat onsets were ready for analysis, as described
 in Section~\ref{waltz_micro-timing}.
 
-As an alternative, manual beat annotations were created using the Sonic
+As an alternative, manual beat annotations were created by hand using the Sonic
 Visualiser software \cite{cannam2010}. While the micro-timing from this approach was
-more prominent, the data had a large variance which led to the generated music
-sounding erratic. For this reason, the automatic approach was chosen.
+more prominent, the data had a large variance (likely due to human imprecision) which led to the generated music sounding erratic. For this reason, the automatic approach was chosen.
 
 
 \subsection{Micro-timing estimation} \label{waltz_micro-timing}
 
-To calculate the micro-timing offset of each beat from just the onset time
+To calculate the micro-timing displacement of each beat from just the onset time
 involves first identifying the start and end of each cycle, estimating the onset
 of each beat as if they were isochronous, then finding the difference between this
-and the actual onset to get the offset. The full calculation is shown in
-Equation~\ref{eq:offset_from_onset}, where $i$ ranges over the indices of all the onsets in the piece.
+and the actual onset to get the displacement. The full calculation is shown in
+Equation~\ref{eq:displacement_from_onset}, where $i$ ranges over the indices of all the onsets in the piece.
 
 \begin{equation}
 \begin{split}
@@ -1332,31 +1332,29 @@ Equation~\ref{eq:offset_from_onset}, where $i$ ranges over the indices of all th
     \mathrm{cycleDuration}_i  &= \mathrm{cycleEnd}_i - \mathrm{cycleStart}_i \\
     \mathrm{isochronousBeatDuration}_i &= \frac{\mathrm{cycleDuration}_i}{3} \\
     \mathrm{isochronousOnset}_i &= \mathrm{cycleStart}_i + (\mathrm{metricLocation}_i \times \mathrm{isochronousBeatDuration}_i) \\
-    \mathrm{offset}_i &= \frac{\mathrm{onset}_i-\mathrm{isochronousOnset}_i}{\mathrm{isochronousBeatDuration}_i} \\
-    \mathrm{phase}_i          &= \mathrm{offset}_i + \mathrm{metricLocation}_i
+    \mathrm{displacement}_i &= \frac{\mathrm{onset}_i-\mathrm{isochronousOnset}_i}{\mathrm{isochronousBeatDuration}_i} \\
+    \mathrm{phase}_i          &= \mathrm{displacement}_i + \mathrm{metricLocation}_i
 \end{split}
-\label{eq:offset_from_onset}
+\label{eq:displacement_from_onset}
 \end{equation}
 
 The data is assumed to have exactly one onset for each beat in the piece and the
 duration of a cycle is assumed to be the time between its first beat and the
 first beat of the next cycle.
 
-Once the offsets have been derived, maximum
+Once the displacements have been derived, maximum
 likelihood estimation is used to fit the probability distributions, as described in
 Section~\ref{jembe_micro-timing}.
+\newpage
 
 
 
 \section{MusicXML converters} \label{musicxml_converters}
 
-MusicXML is a commonly used file format for encoding Western music notation
-which is based on XML \cite{good2001}. In preparation for the evaluation, I have also
-implemented a pair of converter programs between MusicXML and my extended Sonic
-Pi language.
+The final part of my implementation consists of a pair of converter programs which enables importing and exporting music to/from my extended Sonic Pi language. This would be a useful tool for users, and it also prepares for the evaluation in Section~\ref{metre_evaluation}. The converters target MusicXML, a commonly used file format for encoding Western music notation which is based on XML \cite{good2001}.
 
 \begin{itemize}
-	\item \verb'convert_mxl.py' uses the \verb'music21' Python library to parse an input MusicXML file into Python objects, which are then iterated over to produce Sonic Pi code
+	\item \verb'convert_musicxml.py' uses the \verb'music21' Python library to parse an input MusicXML file into Python objects, which are then iterated over to produce Sonic Pi code
 	\item \verb'convert_sonicpi.rb' takes an input Sonic Pi file and iterates over it to produce \verb'music21' Python code. This code is then run automatically to generate the final MusicXML output
 \end{itemize}
 
@@ -1415,7 +1413,7 @@ The following is the high-level structure of the repository:
 .3 .gitignore.
 .3 analysis.py\DTcomment{Loads data for analysis}.
 .3 beattrack.py\DTcomment{Performs beat tracking on an audio file}.
-.3 convert\_mxl.py\DTcomment{Converts MusicXML to Sonic Pi}.
+.3 convert\_musicxml.py\DTcomment{Converts MusicXML to Sonic Pi}.
 .3 convert\_sonicpi.rb\DTcomment{Converts Sonic Pi to MusicXML}.
 .3 convert\_transcription.py\DTcomment{Converts jembe transcription text files to Sonic Pi}.
 .3 metre.rb\DTcomment{Copy of metre code for converters}.
@@ -1480,14 +1478,14 @@ the other jembe pieces showed the same pattern.
 
 Figure~\ref{fig:waltz_histogram} shows the results for the waltz dataset (Section~\ref{waltz_data_analysis}). The calculations
 use the first beat as the definition for the start of the cycle, so every beat 1
-has an offset of 0, which is why its histogram has no variance. The early onset
+has a displacement of 0, which is why its histogram has no variance. The early onset
 of the second beat can be clearly seen in the plot ($\mu=-0.0743$, $\sigma=0.0795$). A
 one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5$, $p=0.000$). Beats 1 and 3 show no significant deviation from the metrical grid, so a short-long-medium pattern (SLM) is observed.
 
 \begin{figure}[ht]
     \centering
     \input{figures/waltz-histogram.pgf}
-    \caption{A histogram plot of the offset of each beat for the waltz dataset. Dashed lines show the metrical grid. Black curves show the PDF of the MLE-derived probability distributions.}
+    \caption{A histogram plot of the displacement of each beat for the waltz dataset. Dashed lines show the metrical grid. Black curves show the PDF of the MLE-derived probability distributions.}
     \label{fig:waltz_histogram}
 \end{figure}
 
@@ -1634,20 +1632,20 @@ found experts could not reliably discriminate between this and SML\@. Therefore,
 the final selection of timing patterns was SSL, SML, SLM, SLS, and isochronous.
 
 To use this data in my micro-timing implementation, I first needed to convert
-the relative pulse lengths into offsets, which I achieved with Equation~\ref{eq:proportion_to_offset}. The
-results of my data analysis in Section~\ref{micro-timing_estimation_results} showed an SML pattern, so offsets for this
+the relative pulse lengths into displacements, which I achieved with Equation~\ref{eq:proportion_to_displacement}. The
+results of my data analysis in Section~\ref{micro-timing_estimation_results} showed an SML pattern, so displacements for this
 pattern were obtained from the data analysis instead.
 
 \begin{equation}
     \begin{split}
         \mathrm{phase}_0 &= 0 \\
         \mathrm{phase}_i &= \mathrm{cycleDuration} \times \sum_{j=0}^{i-1} \mathrm{relativePulseLength}_j \\
-        \mathrm{offset}_i &= \mathrm{phase}_i - \mathrm{pulseLocation}_i
+        \mathrm{displacement}_i &= \mathrm{phase}_i - \mathrm{pulseLocation}_i
     \end{split}
-    \label{eq:proportion_to_offset}
+    \label{eq:proportion_to_displacement}
 \end{equation}
 
-Once the offsets were calcualated (or derived from data), the probability distributions for the stimuli could be created, using the offset as the mean. They used the standard deviations that were found in the data analysis to try to maintain the expressivity of the performance.
+Once the displacements were calcualated (or derived from data), the probability distributions for the stimuli could be created, using the displacement as the mean. They used the standard deviations that were found in the data analysis to try to maintain the expressivity of the performance.
 
 \subsubsection{Waltz} \label{waltz_stimuli}
 
@@ -1662,7 +1660,7 @@ pulse. Consequently, these patterns are also suitable for application to the
 beat lengths in the waltz. The final selection of timing patterns was SLM, LSS,
 SSL, SLS, and isochronous.
 
-Converting these to offsets was done in the same way as for jembe (Equation~\ref{eq:proportion_to_offset}).
+Converting these to displacements was done in the same way as for jembe (Equation~\ref{eq:proportion_to_displacement}).
 
 
 \subsection{Jembe results} \label{user_study_jembe_results}
@@ -1749,6 +1747,8 @@ Musicians gave a higher mean score to SML than non-musicians, however a \textit{
 between musicians' and non-musicians' scores found this difference to not be
 significant ($t=1.05, p=0.152$). Therefore, despite there also being some suggestion
 that Hypothesis~\ref{hypothesis_2} is true for jembe, there is insufficient evidence to accept it.
+
+A power analysis was performed for sample size estimation using effect sizes estimated from Neuhoff et al.'s results \cite{neuhoff2017}. The smallest estimated effect size across all the pairings was 0.619 (still considered a medium effect \cite{cohen2013}). For a power of 0.8 and a 5\% significance, the minimum sample size was calculated to be 22. As the sample size in this study exceeds that, it seems likely increasing the sample size further would not significantly change the results.
 
 
 \subsection{Waltz results} \label{user_study_waltz_results}
@@ -1879,7 +1879,7 @@ participants in the study struggling to identify the expected pattern, I conclud
 
 
 
-\section{Metre evaluation} \label{metre_evaluation}
+\section{Round-trip conversion} \label{metre_evaluation}
 
 The final method I have used to assess the project is to evaluate the
 implementation of metre by demonstrating the new utility that can be gained from
@@ -1893,7 +1893,7 @@ representing a MusicXML file. This was then converted to Sonic Pi code (shown in
 Appendix~\ref{appendix_code_metre_evaluation}), then converted back to MusicXML. The final result is
 shown in Figure~\ref{fig:musicxml_after}. The resulting music sounds identical, and the changes in
 metre are preserved. The only difference is a slight change in the beaming in
-bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly.
+bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly (because this is also lost in the conversion).
 
 With the existing Sonic Pi language, it would not be possible to perform this
 round-trip conversion without loss of information. In particular, without an
@@ -1902,7 +1902,7 @@ grouping of notes into cycles would be lost upon conversion to Sonic Pi.
 Therefore a conversion back to MusicXML would have a different result to
 the original music.
 
-Figure~\ref{fig:musicxml_bad} shows the results when metre information is lost during conversion. The \verb'music21' library infers an incorrect \setmetre{12}{4} time signature, and the separation of the notes into bars is lost.
+Figure~\ref{fig:musicxml_bad} shows the results when metre information is lost during conversion. The \verb'music21' library infers an incorrect \setmetre{12}{4} time signature because the separation of the notes into distinct bars is lost.
 
 \begin{figure}[ht]
     \centering
@@ -1957,7 +1957,7 @@ to allow users to create music with style-specific micro-timing. This required
 the music to be written in a metrical context, which Sonic Pi doesn't have. I
 have successfully implemented a functional concept of musical metre, using my
 MetreLeaf and MetreTree classes to construct arbitrary metrical hierarchies and
-perform transformations on them.
+perform transformations on them (Section~\ref{metre_implementation}).
 
 Having metre in Sonic Pi is also useful in its own right as it allows for the
 representation and manipulation of metrical structures within a piece of music.
@@ -1965,18 +1965,18 @@ This utility, as well as the correct operation of my implementation, was
 demonstrated successfully in the evaluation (Section~\ref{metre_evaluation}).
 
 Probabilistic micro-timing has been implemented by using normal distributions to
-define the offset of each metrical event in a cycle from its position on the
+define the displacement of each metrical event in a cycle from its position on the
 grid. Random samples are drawn from these distributions during playback to
-adjust the timing of notes.
+adjust the timing of notes (Section~\ref{micro-timing_implementation}).
 
 The second key part of my success criteria was to be able to use this
 implementation to generate music with realistic micro-timing. To do this, I
 performed data analysis on recordings of music from the Malian jembe and
-Viennese waltz styles. This allowed me to derive probability distributions and
+Viennese waltz styles (Sections~\ref{jembe_data_analysis} and~\ref{waltz_data_analysis}). This allowed me to derive probability distributions and
 generate appropriate music. By including Viennese waltz, I was able to achieve
 one of my extension criteria.
 
-I then conducted a user study to evaluate the realism of the synthetic music.
+I then conducted a user study to evaluate the realism of the synthetic music (Section~\ref{user_study}).
 The results of this were significant for the waltz style, which demonstrated my
 project's success in achieving this. I also received feedback from an expert in
 jembe music, who described the results as ``realistic and beautiful''.
@@ -2016,7 +2016,7 @@ deriving more accurate distributions.
 
 Finally, future work could also involve implementing a control within Sonic Pi
 to dynamically adjust the ``strength'' of the micro-timing, i.e.\ transform the
-timing offsets between style-specific and isochronous.
+timing displacements between style-specific and isochronous.
 
 
 
