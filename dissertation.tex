@@ -166,7 +166,7 @@ music in certain styles more realistically. It also allows for further
 creativity, such as by applying the micro-timing strategies of one style to
 music from another style.
 
-Music live coding (Section~\ref{live_coding_background}) is a way of creating and performing music by writing
+Musical live coding (Section~\ref{live_coding_background}) is a way of creating and performing music by writing
 and modifying code in real time \cite{magnusson2011}. This was an interesting area to focus on for
 this project because the nature of live coding allows for creative applications
 of micro-timing, such as by adjusting the micro-timing during a performance.
@@ -264,12 +264,12 @@ micro-timing. This is formalised in Justin London's Many Meters Hypothesis
 \cite{london2012}.
 
 A metre without any micro-timing is said to be `isochronous',
-which means the metric events at each level are equally spaced in time.
+which means the metrical events at each level are equally spaced in time.
 
 
 \subsection{Live coding} \label{live_coding_background}
 
-Music live coding is a way of creating and performing music by writing and
+Musical live coding is a way of creating and performing music by writing and
 modifying code in real time. The performer typically projects their code onto a
 screen for an audience to follow along with \cite{magnusson2011}. The liveness of the
 performance is important -- it is argued that the musician must directly
@@ -313,7 +313,7 @@ Viennese waltz music, which offers a Western comparison.
 
 Jembe ensemble music is a style of music involving a small group of drummers
 which originated in West Africa. The primary drum is the eponymous jembe, which
-is a goblet-shaped drum played with the bare hands. This is usually accompanied
+is a goblet-shaped drum played with the bare hands (Figure~\ref{fig:jembe_photo}). This is usually accompanied
 by the dundun, which is a cylindrical drum played with a stick \cite{polak2010}. In a
 traditional jembe trio, there are two jembe players and one dundun player, with
 Jembe 1 having a lead role, Jembe 2 playing a simple accompaniment, and Dundun
@@ -328,6 +328,13 @@ have one of the lowest levels of timing variability between performers in the
 world \cite{clayton2020}. Compared with other styles of music, jembe music is
 relatively constrained in terms of its pitch, timbre, and number of instruments,
 which allows for a clear focus on timing. The strength of existing research \cite{polak2010,london2017,jacoby2021} into the micro-timing of jembe music is another reason why it makes a good case study.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/polak_ex1.jpg}
+    \caption{Left: Dundun (Madu Jakite). Centre: Jembe 1 (Sedu Balo). Right: Jembe 2 (Drissa Kone). Reproduced from Polak \cite{polak2010}.}
+    \label{fig:jembe_photo}
+\end{figure}
 
 The Viennese waltz is a style of music intended for ballroom dancing. It is a
 fast waltz in \setmetre{3}{4} at around 180 beats per minute (bpm) and is performed by a
@@ -502,7 +509,7 @@ designing my representation \cite{ariza2010}.
 
 The tree structure is implemented by the MetreLeaf and MetreTree classes (see
 Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default nesting of these objects
-for both a \setmetre{4}{4} time signature and an unconventional example metre, and each object's duration. Note the duration of a parent node is the sum of the durations of its children.
+for both a \setmetre{4}{4} time signature and an unconventional example metre, and each object's duration. Note the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre (Figure~\ref{fig:tree_object_hierarchy_unconventional}) and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
 
 \begin{figure}[ht]
     \centering
@@ -534,9 +541,10 @@ for both a \setmetre{4}{4} time signature and an unconventional example metre, a
         \caption{Object hierarchy for \setmetre{4}{4}}
         \label{fig:tree_object_hierarchy_4_4}
     \end{subfigure}
+    \\[1ex]
     \begin{subfigure}{\linewidth}
         \centering
-        \resizebox{0.7\linewidth}{!}{
+        \resizebox{0.8125\linewidth}{!}{
             \begin{forest}
                 for tree=draw,
                 [{\small \bfseries Metre \\ $d=\frac{11}{8}$}
@@ -546,13 +554,16 @@ for both a \setmetre{4}{4} time signature and an unconventional example metre, a
                     ]
                     [{\small \bfseries MetreTree \\ $d=\frac{1}{4}$}
                         [{\small \bfseries MetreLeaf \\ $d=\frac{1}{16}$}]
-                        [{\small \bfseries MetreTree \\ $d=\frac{3}{16}$}
-                            [{\small \bfseries MetreLeaf \\ $d=\frac{1}{16}$}]
-                            [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                        ]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{3}{16}$}]
                     ]
                     [{\small \bfseries MetreLeaf \\ $d=\frac{1}{8}$}]
-                    [{\small \bfseries MetreLeaf \\ $d=\frac{3}{4}$}]
+                    [{\small \bfseries MetreTree \\ $d=\frac{3}{4}$}
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{4}$}]
+                        [{\small \bfseries MetreLeaf \\ $d=\frac{1}{2}$}
+                            [{\small \bfseries MetreLeaf \\ $d=\frac{5}{16}$}]
+                            [{\small \bfseries MetreLeaf \\ $d=\frac{3}{16}$}]
+                        ]
+                    ]
                 ]
             \end{forest}
         }
@@ -561,6 +572,13 @@ for both a \setmetre{4}{4} time signature and an unconventional example metre, a
     \end{subfigure}
     \caption{Two examples of how MetreTree and MetreLeaf objects are nested to construct metrical hierarchies for two different metres. The total duration $d$ of each node is also displayed, and the duration of a parent node is the sum of the durations of its children.}
     \label{fig:tree_object_hierarchy}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/hierarchy_notation_v2.pdf}
+    \caption{One bar of music using the metre in Figure~\ref{fig:tree_object_hierarchy_unconventional}. Western music notation shows the hierarchy by the way it groups notes.}
+    \label{fig:unconventional_metre_notation}
 \end{figure}
 
 
@@ -665,12 +683,9 @@ Some examples of the output of \verb'get_level()' for the following unconvention
 \[
     \left[
         \left[\frac{1}{8},\frac{1}{8}\right],
-        \left[
-            \frac{1}{16},
-            \left[\frac{1}{16},\frac{1}{8}\right]
-        \right],
+        \left[\frac{1}{16},\frac{3}{16}\right],
         \frac{1}{8},
-        \frac{3}{4}
+        \left[\frac{1}{4},\left[\frac{5}{16},\frac{3}{16}\right]\right]
     \right]
 \]
 
@@ -681,15 +696,15 @@ Some examples of the output of \verb'get_level()' for the following unconvention
         \hline
         $l$     & \verb'get_level'$(l)$ \\
         \hline
-        $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{1}{16},\frac{1}{8},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{3}{16},\frac{3}{16},\frac{3}{16},\frac{3}{16} \right]$ \\
-        $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{3}{16},\frac{1}{16},\frac{1}{16},\frac{3}{8},\frac{3}{8} \right]$ \\
+        $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{3}{32},\frac{3}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{8},\frac{1}{8},\frac{5}{16},\frac{3}{16} \right]$ \\
+        $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{3}{16},\frac{1}{16},\frac{1}{16},\frac{1}{4},\frac{1}{2} \right]$ \\
         $0$     & $\displaystyle \left[ \frac{1}{4},\frac{1}{4},\frac{1}{8},\frac{3}{4} \right]$ \\
         $-1$    & $\displaystyle \left[ \frac{1}{2},\frac{7}{8} \right]$ \\
         $-2$    & $\displaystyle \left[ \frac{11}{8} \right]$ \\ [1ex]
         \hline
     \end{tabular}
     \renewcommand{\arraystretch}{1.0}
-    \cprotect\caption{Examples of the output of \verb'get_level'$(l)$ at different metrical levels $l$ for the hierarchy $[[1/8,1/8],[1/16,[1/16,1/8]],1/8,3/4]$. Note how level $l=-1$ is formed by the clustering of level $l=0$.}
+    \cprotect\caption{Examples of the output of \verb'get_level'$(l)$ at different metrical levels $l$ for the hierarchy $[[1/8,1/8],[1/16,3/16],1/8,[1/4,[5/16,3/16]]]$. Note how level $l=-1$ is formed by the clustering of level $l=0$.}
     \label{table:get_level}
 \end{table}
 
@@ -949,7 +964,7 @@ The third beat is very slightly late, with normal distribution $(\mu,\sigma)=(0.
 The class also has a test to see if the style is compatible with a given metrical
 hierarchy. A Style is defined as being compatible with a MetreTree if, for each
 metrical level defined in the Style, it has exactly one distribution for each
-metric event at that level in the MetreTree.
+metrical event at that level in the MetreTree.
 
 \subsubsection{NormalDistribution class} \label{normal_distribution}
 
@@ -1152,7 +1167,7 @@ The datasets supply the following data:
 \begin{itemize}
 	\item Onset time -- the time when a drum stroke occurs
 	\item Cycle number
-	\item Metric location -- which metric event the onset belongs to
+	\item Metric location -- which metrical event the onset belongs to
 	\item Phase -- the actual timing of the onset within the cycle
 \end{itemize}
 
@@ -1160,7 +1175,7 @@ The datasets supply the following data:
 \subsection{Micro-timing estimation} \label{jembe_micro-timing}
 
 The pieces of jembe music in the dataset use a metre\footnote{See Polak \cite{polak2010} for an ethnographically sensitive discussion of the extent to which `metric location' applies in this context.} with four beats, each of
-which divides into three, for a total of 12 metric events at the first division
+which divides into three, for a total of 12 metrical events at the first division
 level (\setmetre{12}{8} in Western classical notation). It is at this level, referred to as the `pulse', that the micro-timing occurs.
 
 Each event at the pulse level has a position in the cycle at which a note would
@@ -1493,8 +1508,8 @@ one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5$, 
 \subsection{Jembe tempo estimation} \label{jembe_tempo_estimation_results}
 
 Figure~\ref{fig:suku_tempo} shows the change in estimated tempo over the duration of the piece for
-`Suku', as described in Section~\ref{tempo_estimation}. The tempo starts at around 135 bpm at the beginning of the piece and
-ends at around 175 bpm. The dark blue line shows the smoothed mean tempo, and
+`Suku', as described in Section~\ref{tempo_estimation}. The tempo starts at around 135~bpm at the beginning of the piece and
+ends at around 175~bpm. The dark blue line shows the smoothed mean tempo, and
 the black lines show the logarithmic and quadratic curves fit to the data. The
 logarithmic curve in this example has the equation $y=17.1 \ln(x+18.7)+83.2$.
 The quadratic curve has the equation $y=-0.42x^2+84.2x-4014$. The
@@ -1588,7 +1603,7 @@ The five stimuli for each style were short audio clips of typical music from tha
 
 Following Neuhoff et al.\ \cite{neuhoff2017}, the jembe stimuli consisted of a
 four-cycle loop of a typical phrase from the piece `Manjanin'. The stimuli were
-generated in Sonic Pi at 145 bpm using jembe drum sound samples provided by
+generated in Sonic Pi at 145~bpm using jembe drum sound samples provided by
 Polak. Each stimulus lasted for approximately 10 seconds and began with a
 four-beat click track to help participants identify the beats in the music. The
 rhythmic pattern used from Manjanin is shown in Table~\ref{table:manjanin_rhythm} and is taken from the IEMP
@@ -1868,7 +1883,8 @@ waltz (1.70 compared to 2.83).
 
 It is likely that the results for the jembe section would have shown a stronger
 trend for the SML pattern if the participants had been more familiar with jembe
-music, as in Neuhoff et al.\ \cite{neuhoff2017}.
+music, as in Neuhoff et al.\ \cite{neuhoff2017}. Indeed, having expert participants would also make for more musically meaningful results. However, research in Music Information Retrieval (MIR) has historically focused on mainstream Western music \cite{gomez2013} and there is an important movement towards studying more diverse repertoires \cite{born2020}.
+So, despite access to expertise being an inevitable challenge with repertoires like jembe, this is a shortcoming that must be accepted in order to diversify the study of MIR.
 
 In addition to this study, I generated a full-length synthetic recording of
 Manjanin with the data-derived micro-timing. In addition to providing much
@@ -1939,7 +1955,7 @@ because this would not have been possible without it.
 \chapter{Conclusions} \label{conclusions}
 
 In this project, I have investigated and implemented probabilistic
-style-specific micro-timing in a music live coding language. To do this, I
+style-specific micro-timing in a musical live coding language. To do this, I
 extended the Sonic Pi language with an implementation of musical metre and
 micro-timing, and developed a method of synchronising this micro-timing between
 multiple threads. I then performed data analysis on recordings of music from two
