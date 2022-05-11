@@ -28,3 +28,4 @@ dissertation.pdf
 *.cpt
 .vscode
 _minted-dissertation
+wordcount.tex

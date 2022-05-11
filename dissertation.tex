@@ -150,7 +150,7 @@ style-specific micro-timing in the Sonic Pi live coding language. The aim was to
 use a probabilistic approach to control the exact timing of music written in
 Sonic Pi according to realistic deviations found in music across the world. My
 implementation introduces the concept of musical metre into Sonic Pi, for which
-I demonstrate its successful use and then utilise to create micro-timing. I also
+I demonstrate its successful use and then utilise it to create micro-timing. I also
 perform data analysis on the micro-timing of two different styles of music and
 evaluate the realism of the resulting music. This achieves the key success
 criteria set out in my project proposal and one suggested extension.
@@ -191,10 +191,9 @@ The micro-timing of different musical styles has been analysed extensively in re
 
 Creating music with synthetic micro-timing has been explored as part of music
 information retrieval (MIR) for a long time. This is often attempting to model
-human-like expressive timing \cite{bilmes1993}. Oore et al.\ used an
+human-like expressive timing \cite{bilmes1993}. For example, Oore et al.\ used an
 LSTM-based recurrent neural network to generate piano music with expressive
-timing and dynamics \cite{oore2020}. Huang and Yang use a transformer model with
-metrical constraints to automatically compose pop music \cite{huang2020}. However, there is little previous research on implementing user-defined systematic micro-timing as in this project. A commercial product which has this functionality is the FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live. It gives the user
+timing and dynamics \cite{oore2020}. However, there is little previous research on implementing user-defined systematic micro-timing as in this project. A commercial product which has this functionality is the FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live. It gives the user
 control over swing and other micro-timing deviations, including a probabilistic
 element.
 
@@ -385,13 +384,13 @@ Table~\ref{table:requirements}.
     Implement representation of probability distributions for a style   & High \\
     Use distributions to implement probabilistic micro-timing           & High \\
     Perform data analysis on jembe recording dataset                    & High \\
-    Perform data analysis on Viennese waltz recordings                  & Medium \\
+    Perform data analysis on Viennese waltz recordings                  & Medium* \\
     Generate synthetic music for the jembe case study                   & High \\
     Conduct user study to evaluate realism of generated music           & High \\
-    Implement converter to and from MusicXML                            & Low \\
+    Implement converter to and from MusicXML                            & Low* \\
     \bottomrule
 \end{tabularx}
-\caption{Refined list of requirements (and their priorities) that should be achieved for the project to succeed as planned}
+\caption{Refined list of requirements (and their priorities) that should be achieved for the project to succeed as planned. Asterisks (*) indicate extensions.}
 \label{table:requirements}
 \end{table}
 
@@ -404,8 +403,7 @@ to do this before starting the implementation to ensure this went ahead smoothly
 and without trial-and-error.
 
 One approach I considered was to intercept Open Sound Control (OSC) network
-messages between Sonic Pi and SuperCollider and adjust the timing of the event
-contained in the message. This approach would put very few constraints on the choice of programming language for the project because the code would run independently of Sonic Pi, and would only need to support the OSC protocol. A small amount of Sonic Pi code would still need to be modified, however, to redirect its OSC messages.
+messages between Sonic Pi and SuperCollider and modify the message to adjust the timing of the resulting sound. This approach would put very few constraints on the choice of programming language for the project because the code would run independently of Sonic Pi, and would only need to support the OSC protocol. A small amount of Sonic Pi code would still need to be modified, however, to redirect its OSC messages.
 
 The alternative was to build my code into the Sonic Pi codebase. This would
 require me to use Ruby, however this approach works at a higher level so Sonic Pi can
@@ -441,8 +439,7 @@ To reduce the risk of data loss throughout this project, various version control
 and backup systems were used. The Git version control system was used to manage
 the code in this project, with remote repositories on GitHub acting as backup
 storage. Windows' FileHistory also performed regular local backups, and I used
-Google Drive as an additional external backup destination for project files not
-managed by Git.
+Google Drive as an additional external backup destination.
 
 
 \subsection{Testing}
@@ -494,7 +491,7 @@ where each integer corresponds to a beat, and the value of each integer is the
 number of pulses that beat is divided into (one of the representations used by Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
 beats are subdivided into three, and the second two beats are subdivided into
 two. For lower metrical levels (two or more subdivisions of the beat level), it
-was assumed that they divide into two.
+was assumed that they divide into two (see explanation in Section~\ref{metrical_hierarchy}).
 
 This form had the advantage of being a simple and compact representation which
 handled common time signatures (such as \setmetre{4}{4} or \setmetre{6}{8}) well. However, this approach
@@ -610,7 +607,7 @@ example, the previous example hierarchy in Figure~\ref{fig:tree_object_hierarchy
 Each list is a
 MetreTree, and each fraction is a MetreLeaf. The MetreTree class contains
 several methods for manipulating and extracting information from the metrical
-hierarchy it represents. The most important two of these are explained in more
+hierarchy it represents. The two most important of these are explained in more
 detail below.
 
 \subsubsection{Getting metrical levels} \label{get_level}
@@ -712,12 +709,12 @@ Some examples of the output of \verb'get_level()' for the following unconvention
 
 \subsubsection{Getting exact metrical events} \label{metrical_level_indices}
 
-The second key method in the MetreTree class is \verb'metrical_level_indices()'. For a
-given offset into the metric cycle, this algorithm finds any metrical events
+The second key method in the MetreTree class is \verb'metrical_level_indices()'. We define an \emph{offset} as a position in the metric cycle represented as the number of quarter lengths since the beginning of the cycle. For a
+given offset, this algorithm finds any metrical events
 which the offset occurs exactly on, and returns their index.
 
-For the example shown in Figure~\ref{fig:metrical_level_indices_example}, offset $x$
-occurs on the first event of all three levels, so the function would return $[0 \Rightarrow 0,1 \Rightarrow 0,2 \Rightarrow 0]$ (a Hash from level to index). Offset $y$ occurs only on the last event of Level 1 and the second-to-last event of Level 2, so the function would return $[1 \Rightarrow 3,2 \Rightarrow 6]$.
+Consider the example shown in Figure~\ref{fig:metrical_level_indices_example}. Offset $x$
+occurs on the first event of all three levels, so the function would return $L_0(x)=L_1(x)=L_2(x)=0$, where $L_l(x)$ is the index of an event at level $l$ that offset $x$ occurs on. Offset $y$ occurs only on the last event of Level 1 and the second-to-last event of Level 2, so the function would return $L_1(y)=3, L_2(y)=6$.
 
 This method is important because it
 is used later to determine which micro-timing probability distributions should
@@ -792,44 +789,43 @@ A bar\footnote{Known as a bar in British English, and a measure in American Engl
 metric cycle\footnote{A more precise definition would account for \emph{hypermetre}, where bars occur at the beat level \cite{neal2000}, but this is not required here.}. The Bar class is a representation of this, and each instance of it
 has an associated metre. A Bar object is responsible for:
 \begin{itemize}
-	\item Keeping track of the playback position through the cycle
-	\item Converting a note duration given as a metrical level and a count into
+	\item Keeping track of the playback position through the cycle (the \verb'current_offset' variable)
+	\item Converting a note length given as a metrical level and a duration into
 quarter lengths
 	\item Checking if a note or rest fits in the remaining time in the cycle, and
 updating the bar's playback position accordingly
 \end{itemize}
 
-A note duration is specified as a metrical level and a duration. The duration
+A note's length is specified as a metrical level and a duration. The duration
 is in units of an event at the specified metrical level, so acts as a multiplier.
-For example, a note with level 0 and duration 3 will last for 3 beats. The
-\verb'add_note()' method handles checking if a note fits into the bar, as shown in
+For example, if a note's length is defined as $(l,d)=(0,3)$, its unit is the length of an event at level $l=0$, and it lasts for $d=3$ of these units.
+
+The \verb'add_note()' method handles checking if a note fits into the bar, as shown in
 Algorithm~\ref{alg:add_note}. If a note cannot fit into the bar's remaining time,
 an exception is raised. This ensures the bar obeys the duration of its metre.
 
 \begin{algorithm}
-    \SetKwData{NewOffset}{newOffset}
-    \SetKwData{CurrOffset}{currentOffset}
     \SetKwFor{RepeatTimes}{repeat}{times do}{end}
-    \SetKwFunction{NoteException}{CannotFitNoteException}
     \SetKw{Raise}{raise}
 
-    \caption{addNote()}
+    \caption{add\_note()}
     \KwIn{Metrical level, $l$}
     \KwIn{Duration, $d$}
     \KwIn{Total metre duration (in quarter lengths), $q$}
+    \KwIn{Bar's current playback position, @current\_offset}
     \BlankLine
 
-    $\NewOffset \gets \CurrOffset$\;
-    $M \gets$ metre at level $l$\;
+    new\_offset $\gets$ @current\_offset\;
+    $M \gets$ metre flattened to level $l$\;
     \RepeatTimes{$d$}{
-        \eIf{$\NewOffset \geq q$}{
-            \Raise \NoteException\;
+        \eIf{new\_offset $\geq q$}{
+            \Raise CannotFitNoteException\;
         }{
-            $n \gets$ length of active event in $M$ at \NewOffset\;
-            $\NewOffset \gets \NewOffset + n$\;
+            $n \gets$ length of active event in $M$ at new\_offset\;
+            new\_offset $\gets \textnormal{new\_offset} + n$\;
         }
     }
-    $\CurrOffset \gets \NewOffset$\;
+    @current\_offset $\gets$ new\_offset\;
     \label{alg:add_note}
 \end{algorithm}
 
@@ -1263,7 +1259,7 @@ just onsets on the beats. I then calculated the inter-beat interval using Equati
     \label{eq:tempo}
 \end{equation}
 
-Inspection of the smoothed tempo graphs showed a logarithmic trend for the first $\sim95\%$ of the piece. A sharper increase follows this which was
+Inspection of the smoothed tempo graphs (Section~\ref{jembe_tempo_estimation_results}) showed a logarithmic trend for the first $\sim95\%$ of the piece. A sharper increase follows this which was
 modelled by a quadratic curve. To fit curves to the data, I used the \verb'optimize.curve_fit' function from the SciPy Python library, which uses a non-linear least
 squares method. The parameters estimated by the curve fitting are then used in Sonic Pi
 to control the tempo of a synthetic jembe piece during playback.
@@ -1405,14 +1401,13 @@ If no
 such level can be found, then deeper metrical levels must be searched, where we
 assume they are divided into two each time. The note's duration in quarter
 lengths is first converted to a fraction by dividing by 4. The level $l$ and
-multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multiplier}, where $\log_2\left(\frac{n_d}{\mathrm{deepestDenominator}}\right)$ is the number of levels deeper we need to
-go.
+multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multiplier}, where $\log_2\left(\frac{n_d}{\mathrm{deepestDenominator}}\right)$ is the number of levels deeper we need to go.
 
 \begin{equation}
     \begin{split}
-        \frac{n_n}{n_d} &= \frac{\mathrm{duration}}{4} \\
-        l &= \left\lfloor \mathrm{deepestLevel} + \log_2\left(\frac{n_d}{\mathrm{deepestDenominator}}\right) - 1 \right\rfloor  \\
-        m &= n_n
+        f &= \frac{\mathrm{duration}}{4} \\
+        l &= \left\lfloor \mathrm{deepestLevel} + \log_2\left(\frac{f_\mathrm{denominator}}{\mathrm{deepestDenominator}}\right) - 1 \right\rfloor  \\
+        m &= f_\mathrm{numerator}
     \end{split}
     \label{eq:duration_to_level_multiplier}
 \end{equation}
@@ -1496,9 +1491,8 @@ the jembe pieces, `Suku'. The histograms show the positions within the cycle
 that each of the 12 pulses occurred at (phase). The dashed lines show where the
 event would occur if they were isochronous, so the existence of the micro-timing
 can be seen clearly by the positions of the second and third pulses in each beat.
-By examining the positions of the histograms, the length of each pulse can be
-seen to follow a short-medium-long pattern (SML), which is consistent across
-each beat. Also shown are the probability density functions of the
+By examining the positions of the histograms, we can see that the length of each pulse follows a short-medium-long pattern (SML), which is consistent across
+each beat. Also shown are the probability density functions (PDF) of the
 maximum-likelihood estimated normal distributions. The plots for
 the other jembe pieces showed the same pattern.
 
@@ -1529,8 +1523,6 @@ Figure~\ref{fig:suku_tempo} shows the change in estimated tempo over the duratio
 `Suku', as described in Section~\ref{tempo_estimation}. The tempo starts at around 135~bpm at the beginning of the piece and
 ends at around 175~bpm. The dark blue line shows the smoothed mean tempo, and
 the black lines show the logarithmic and quadratic curves fit to the data. The
-logarithmic curve in this example has the equation $y=17.1 \ln(x+18.7)+83.2$.
-The quadratic curve has the equation $y=-0.42x^2+84.2x-4014$. The
 shaded area shows $\pm1$ standard deviation from the mean.
 
 The results show the increase in tempo throughout the piece that is characteristic of Malian jembe music. The more dramatic speedup at the end is also reflected in this data -- this is why I fit two different curves to the data. The tempo results match those found by Jacoby et al.\ \cite{jacoby2021supp}, and each jembe piece showed the same trend.
@@ -1610,7 +1602,7 @@ Participants were then presented with five synthetic samples for each style,
 each with different micro-timing (see Section~\ref{stimulus_construction} below). They were then asked to consider each stimulus and assess how
 well they thought it fit with the priming examples they heard. Scores were given
 on a scale from 1 (``it sounds completely different'') to 5 (``it sounds fully
-identical'').
+identical''). Additionally, participants were asked to rate their familiarity with each style on a similar 1--5 scale.
 
 
 \subsection{Stimulus construction} \label{stimulus_construction}
@@ -1668,7 +1660,6 @@ To use this data in my micro-timing implementation, I first needed to convert
 the relative pulse lengths into displacements, which I achieved with Equation~\ref{eq:proportion_to_displacement}. The
 results of my data analysis in Section~\ref{micro-timing_estimation_results} showed an SML pattern, so displacements for this
 pattern were obtained from the data analysis instead.
-
 \begin{equation}
     \begin{split}
         \mathrm{phase}_0 &= 0 \\
@@ -1919,15 +1910,7 @@ The final method I have used to assess the project is to evaluate the
 implementation of metre by demonstrating the new utility that can be gained from
 it. To do this, I have implemented a pair of converters which convert between
 music represented by MusicXML and by my extended Sonic Pi language. The goal is
-to convert a section of music from MusicXML into Sonic Pi and back again without
-any loss.
-
-Figure~\ref{fig:musicxml_before} shows a short line of music written in Western music notation,
-representing a MusicXML file. This was then converted to Sonic Pi code (shown in
-Appendix~\ref{appendix_code_metre_evaluation}), then converted back to MusicXML. The final result is
-shown in Figure~\ref{fig:musicxml_after}. The resulting music sounds identical, and the changes in
-metre are preserved. The only difference is a slight change in the beaming in
-bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly (because this is also lost in the conversion).
+to perform a round-trip conversion of a section of music from MusicXML into Sonic Pi and back again without any loss.
 
 With the existing Sonic Pi language, it would not be possible to perform this
 round-trip conversion without loss of information. In particular, without an
@@ -1935,6 +1918,13 @@ implementation of metre, information about the metre of the piece and the
 grouping of notes into cycles would be lost upon conversion to Sonic Pi.
 Therefore a conversion back to MusicXML would have a different result to
 the original music.
+
+Figure~\ref{fig:musicxml_before} shows a short line of music written in Western music notation,
+representing a MusicXML file. This was then converted to Sonic Pi code (shown in
+Appendix~\ref{appendix_code_metre_evaluation}), then converted back to MusicXML. The final result is
+shown in Figure~\ref{fig:musicxml_after}. The resulting music sounds identical, and the changes in
+metre are preserved. The only difference is a slight change in the beaming in
+bar 3 due to the \verb'music21' library inferring the beaming groups incorrectly (because this is also lost in the conversion).
 
 Figure~\ref{fig:musicxml_bad} shows the results when metre information is lost during conversion. The \verb'music21' library infers an incorrect \setmetre{12}{4} time signature because the separation of the notes into distinct bars is lost.
 
@@ -2027,7 +2017,7 @@ style of music, and the theory of metre.
 One thing I would do differently is to more carefully design the metre
 implementation before starting. This is because I had to make significant
 changes when I added the multi-threaded synchronisation, as this was an
-unforeseen problem to solve. Another improvement that could be made would be to
+unforeseen problem to solve. Another possible improvement would be to
 use a more consistent set of priming examples for the Viennese waltz in the user
 study (Section~\ref{priming}). The examples that were used exhibited different degrees of
 micro-timing, and a more coherent set would have improved the effectiveness of
@@ -2050,7 +2040,7 @@ deriving more accurate distributions.
 
 Finally, future work could also involve implementing a control within Sonic Pi
 to dynamically adjust the ``strength'' of the micro-timing, i.e.\ transform the
-timing displacements between style-specific and isochronous.
+timing displacements between being style-specific and isochronous.
 
 
 
