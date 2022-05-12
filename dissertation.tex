@@ -105,7 +105,7 @@ I, Max Johnson of Clare College, being a candidate for Part II of the Computer S
 \bf Project title:      & Musical micro-timing for live coding \\
 \bf Examination:        & Computer Science Tripos -- Part II, July 2022  \\
 \bf Word count:         & TBC \\
-\bf Code line count:    & 1,935 \\
+\bf Code line count:    & 1,937 \\
 \bf Project originator: & Mark Gotham \\
 \bf Supervisor:         & Mark Gotham
 \end{tabular}
@@ -146,7 +146,7 @@ None.
 \chapter{Introduction} \label{introduction}
 
 In this project, I present a novel system for generating music with
-style-specific micro-timing in the Sonic Pi live coding language. The aim was to
+style-specific micro-timing in the Sonic Pi live coding language. I
 use a probabilistic approach to control the exact timing of music written in
 Sonic Pi according to realistic deviations found in music across the world. My
 implementation introduces the concept of musical metre into Sonic Pi, for which
@@ -178,8 +178,8 @@ of micro-timing, such as adjusting micro-timing throughout a performance.
 
 The second major component of my project was the data analysis I performed
 on recordings of music from two case study styles. The motivation for this was
-to be able to use my extended Sonic Pi language to generate music from these styles which
-has realistic micro-timing.
+to be able to use my extended Sonic Pi language to generate music from these styles with
+realistic micro-timing.
 
 
 
@@ -193,7 +193,7 @@ Creating music with synthetic micro-timing has been explored as part of music
 information retrieval (MIR) for a long time. This is often attempting to model
 human-like expressive timing \cite{bilmes1993}. For example, Oore et al.\ used an
 LSTM-based recurrent neural network to generate piano music with expressive
-timing and dynamics \cite{oore2020}. However, there is little previous research on implementing user-defined systematic micro-timing as in this project. A commercial product which has this functionality is the FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live. It gives the user
+timing and dynamics \cite{oore2020}. However, there is little academic research on implementing user-defined, systematic micro-timing as in this project. A commercial product which has this functionality is the FlexGroove\footnote{\url{https://www.ableton.com/en/packs/flexgroove/}} tool for Max For Live. It gives the user
 control over swing and other micro-timing deviations, including a probabilistic
 element.
 
@@ -218,7 +218,7 @@ address this with my implementation for Sonic Pi.
 
 This chapter introduces the core theories and background material necessary
 to understand the project. I explain some key concepts in music theory and
-live coding and give an overview of the case study musical styles. Next, I describe the starting point of this project, expand upon the requirements from
+live coding, and give an overview of the case study musical styles. Next, I describe the starting point of this project, expand upon the requirements from
 the project proposal, and conclude with an outline of the software engineering
 techniques used throughout.
 
@@ -243,7 +243,7 @@ The metre of a piece of music causes some notes to feel more strongly accented \
 Figure~\ref{fig:metre_hierarchy_example} 
 shows the beat level, and some of the division and multiple levels for a simple metre, as well as a tree representation of the metrical hierarchy. Note how the first beat occupies the most metrical levels -- we would expect that significant events might occur here, such as chord changes.
 
-Western classical definitions define a metre as \emph{simple} if its first division level splits the beat into two, and \emph{compound} if it splits into three \cite{omt2021}. A \emph{time signature} is a way of notating a metre as a fraction, $\frac{X}{Y}$, which is commonly used in Western music notation \cite{london2012}. For simple metres, $X$ is the number of beats in a cycle and $Y$ represents the length of each beat. For compound metres, $X$ is the number of pulses at the first division level in a cycle and $Y$ represents the unit of these pulses. For example, the metre in Figure~\ref{fig:metre_hierarchy_example} can be notated as \setmetre{4}{4}, meaning a cycle consists of 4 beats, each of which has the duration of a quarter note\footnote{Known as a quarter note in American English, and a crotchet in British English. American English note names are used here because of their clear relation to the notes' durations.}.
+Western classical definitions define a metre as \emph{simple} if its first division level splits the beat into two, and \emph{compound} if it splits into three \cite{omt2021}. A \emph{time signature} is a way of notating a metre as a fraction, $\frac{X}{Y}$, which is commonly used in Western music notation \cite{london2012}. For simple metres, $X$ is the number of beats in a cycle and $Y$ represents the length of each beat. For compound metres, $X$ is the number of pulses at the first division level in a cycle and $Y$ represents the length of each of these pulses. For example, the metre in Figure~\ref{fig:metre_hierarchy_example} can be notated as \setmetre{4}{4}, meaning a cycle consists of 4 beats, each of which has the duration of a quarter note\footnote{Known as a \emph{quarter note} in American English, and a \emph{crotchet} in British English. American English note names are used here because of their clear relation to the notes' durations.}.
 
 \begin{figure}
     \centering
@@ -302,7 +302,7 @@ block of code in a loop in a new thread. This multi-threading allows multiple in
 of multiple threads and long execution time, Sonic Pi uses sophisticated
 ``virtual time'' functionality behind-the-scenes \cite{aaron2014}.
 
-Another Sonic Pi command that is important to this project is \verb'time_warp'. This executes a given block of code with a specified timing shift. Positive shift values execute the block with a delay, and negative values execute it early.
+Another Sonic Pi command that is important to this project is \verb'time_warp'. This executes a given block of code with a specified timing shift. Positive shift values execute the block with a delay, and negative values execute it ahead of time.
 
 One drawback of Sonic Pi is that it currently does not have a built-in notion of
 metre or style-specific micro-timing, which is what this project addresses.
@@ -357,11 +357,12 @@ and tempo but has no support for metre.
 
 Otherwise:
 \begin{itemize}
-	\item No work towards this project had been started in advance;
-	\item Data analysis of recordings of jembe music used existing datasets;
-	\item I had previous knowledge of basic music theory concepts;
+	\item No work towards this project had been started in advance.
+	\item Data analysis of recordings of jembe music used existing datasets.
+	\item I had previous knowledge of basic music theory concepts.
     \item I had no additional knowledge or experience beyond that taught in Part IB.
 \end{itemize}
+\newpage
 
 
 
@@ -403,7 +404,7 @@ to do this before starting the implementation to ensure this went ahead smoothly
 and without trial-and-error.
 
 One approach I considered was to intercept Open Sound Control (OSC) network
-messages between Sonic Pi and SuperCollider and modify the message to adjust the timing of the resulting sound. This approach would put very few constraints on the choice of programming language for the project because the code would run independently of Sonic Pi, and would only need to support the OSC protocol. A small amount of Sonic Pi code would still need to be modified, however, to redirect its OSC messages.
+messages between Sonic Pi and SuperCollider, modifying the message to adjust the timing of the resulting sound. This approach would place very few constraints on the choice of programming language for the project because the code would run independently of Sonic Pi, and would only need to support the OSC protocol. A small amount of Sonic Pi code would still need to be modified, however, to redirect its OSC messages.
 
 The alternative was to build my code into the Sonic Pi codebase. This would
 require me to use Ruby, however this approach works at a higher level so Sonic Pi can
@@ -486,7 +487,7 @@ representation of a single metrical cycle.
 
 \subsection{Initial approach} \label{metre_initial_approach}
 
-The first approach was to use a simple list of integers to represent a metre,
+My first approach was to use a simple list of integers to represent a metre,
 where each integer corresponds to a beat, and the value of each integer is the
 number of pulses that beat is divided into (one of the representations used by Gotham \cite{gotham2015}). For example, [3,3,2,2] represents a metre where the first two
 beats are subdivided into three, and the second two beats are subdivided into
@@ -510,7 +511,7 @@ designing my representation \cite{ariza2010}.
 
 The tree structure is implemented by the MetreLeaf and MetreTree classes (see
 Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default tree structure formed by these objects
-for both a \setmetre{4}{4} time signature and an unconventional example metre, and each object's duration. Note the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre (Figure~\ref{fig:tree_object_hierarchy_unconventional}) and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
+for both a \setmetre{4}{4} time signature and an unconventional, pathological example metre, and each object's duration. Note the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre (Figure~\ref{fig:tree_object_hierarchy_unconventional}) and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
 
 \begin{figure}[ht]
     \centering
@@ -542,7 +543,7 @@ for both a \setmetre{4}{4} time signature and an unconventional example metre, a
         \caption{Object hierarchy for \setmetre{4}{4}}
         \label{fig:tree_object_hierarchy_4_4}
     \end{subfigure}
-    \\[1ex]
+    \\[1.5ex]
     \begin{subfigure}{\linewidth}
         \centering
         \resizebox{0.8125\linewidth}{!}{
@@ -568,7 +569,7 @@ for both a \setmetre{4}{4} time signature and an unconventional example metre, a
                 ]
             \end{forest}
         }
-        \caption{Object hierarchy for an unconventional metre}
+        \caption{Object hierarchy for a pathological \setmetre{11}{8} metre}
         \label{fig:tree_object_hierarchy_unconventional}
     \end{subfigure}
     \caption{Two examples of how MetreTree and MetreLeaf objects are nested to construct metrical hierarchies for two different metres. The total duration $d$ of each node is also displayed, and the duration of a parent node is the sum of the durations of its children.}
@@ -588,9 +589,8 @@ The tree data structures can only have a finite depth, whereas metrical hierarch
 \subsection{MetreLeaf class} \label{metreleaf}
 
 A MetreLeaf object is the leaf node of the metrical tree structure. It has an
-instance variable fraction which is a Rational (a Ruby object for storing a
-rational number as a simplified fraction) which represents the duration of the
-MetreLeaf in the metre. This is expressed as a fraction of a whole note. For
+instance variable \verb'fraction' which represents the duration of the
+MetreLeaf in the metre as a fraction of a whole note. This is stored as a Rational -- a Ruby object representing a rational number as a simplified fraction. For
 example, a leaf node with the duration of a quarter note will have the value $\frac{1}{4}$.
 
 The class contains a \verb'subdivide()' method, which divides the MetreLeaf by two a
@@ -789,11 +789,11 @@ A bar\footnote{Known as a bar in British English, and a measure in American Engl
 metric cycle\footnote{A more precise definition would account for \emph{hypermetre}, where bars occur at the beat level \cite{neal2000}, but this is not required here.}. The Bar class is a representation of this, and each instance of it
 has an associated metre. A Bar object is responsible for:
 \begin{itemize}
-	\item Keeping track of the playback position through the cycle (the \verb'current_offset' variable)
+	\item Keeping track of the playback position through the cycle (the \verb'current_offset' variable).
 	\item Converting a note length given as a metrical level and a duration into
-quarter lengths
+quarter lengths.
 	\item Checking if a note or rest fits in the remaining time in the cycle, and
-updating the bar's playback position accordingly
+updating the bar's playback position accordingly.
 \end{itemize}
 
 A note's length is specified as a metrical level and a duration. The duration
@@ -890,9 +890,8 @@ A metre is created with the \verb'use_metre' or \verb'with_metre' commands. Thes
 designed to match the syntax of existing Sonic Pi commands such as \verb'use_fx' and \verb'with_fx'. Sonic Pi uses multiple threads of execution to allow different musical parts to play simultaneously. Each of these commands operates only within its current thread. See Section~\ref{multi-threaded_synchronisation} for more on multi-threading.
 
 \begin{itemize}
-	\item \verb'use_metre('$m$\verb')' changes the current thread's metre to $m$ (using a thread local variable)
-	\item \verb'with_metre('$m$\mintinline{ruby}|) bar do ... end| executes a block of user code with a
-specified metre $m$, then restores the thread's original metre
+	\item \verb'use_metre('$m$\verb')' changes the current thread's metre to $m$ (using a thread local variable).
+	\item \verb'with_metre('$m$\mintinline{ruby}|) bar do ... end| executes a block of user code with a specified metre $m$, then restores the thread's original metre.
 \end{itemize}
 
 The \mintinline{ruby}|bar do ... end| command creates a new Bar object, stores this to a
@@ -912,10 +911,10 @@ length is given as a metrical level and a duration, as defined in Section~\ref{b
 
 The \verb'add_note' command works as follows:
 \begin{enumerate}
-    \item Gets the current Bar object from the thread local variables
-    \item Calls the Bar's \verb'add_note()' method to check if the note will fit into the current bar
-    \item Passes the note pitch to Sonic Pi's \verb'play' function which creates the sound
-    \item Sleeps for the duration of the note
+    \item Gets the current Bar object from the thread local variables.
+    \item Calls the Bar's \verb'add_note()' method to check if the note will fit into the current bar.
+    \item Passes the note pitch to Sonic Pi's \verb'play' function which creates the sound.
+    \item Sleeps for the duration of the note.
 \end{enumerate}
 
 I have also implemented some shorthand commands such as \verb'add_quarter' and
@@ -1047,10 +1046,10 @@ The SynchronisedMetre class is a subclass of Metre which is designed to control
 the synchronisation of all the notes contained in the metre. Its main functions,
 in addition to those of the Metre class, are to:
 \begin{itemize}
-	\item Set a Style to use for generating micro-timing values
-	\item Sample from the Style's probability distributions to get timing values
-	\item Compute the total timing shift to be applied to a note at a given offset
-	\item Ensure all Bar objects which use it remain synchronised and all have the same set of timing values
+	\item Set a Style to use for generating micro-timing values.
+	\item Sample from the Style's probability distributions to get timing values.
+	\item Compute the total timing shift to be applied to a note at a given offset.
+	\item Ensure all Bar objects which use it remain synchronised and all have the same set of timing values.
 \end{itemize}
 
 
@@ -1213,9 +1212,9 @@ considered two types of approach for this probability density estimation:
 
 \begin{itemize}
 	\item Kernel density estimation (KDE) (non-parametric) -- applies smoothing to the
-data to fit an arbitrary distribution
+data to fit an arbitrary distribution.
 	\item Maximum likelihood estimation (MLE) (parametric) -- choose an existing
-distribution to fit and estimate the parameters which best fit the data
+distribution to fit and estimate the parameters which best fit the data.
 \end{itemize}
 
 The advantage of KDE is that it would be able to accurately represent any shape
@@ -1275,11 +1274,11 @@ patterns, I was able to produce a synthetic Jembe 1 part for Suku with
 semi-realistic rhythms. My approach was as follows:
 
 \begin{enumerate}
-    \item Compute the rhythm played by Jembe 1 in each cycle as a 12-bit binary number, where the bit value at each position indicates whether there was an onset at the corresponding pulse in that cycle
-    \item Convert the 12-bit binary numbers into a unique decimal integer for each cycle
-    \item Count the number of times rhythm $x$ is followed by rhythm $y$ and calculate transition probabilities from these
-    \item Generate a random sequence of rhythm integers using the transition probabilities
-    \item During playback, for each cycle, play a drum stroke on pulse $i$ if there is a 1 at bit $i$ in the binary representation of that cycle's rhythm integer
+    \item Compute the rhythm played by Jembe 1 in each cycle as a 12-bit binary number, where the bit value at each position indicates whether there was an onset at the corresponding pulse in that cycle.
+    \item Convert the 12-bit binary numbers into a unique decimal integer for each cycle.
+    \item Count the number of times rhythm $x$ is followed by rhythm $y$ and calculate transition probabilities from these.
+    \item Generate a random sequence of rhythm integers using the transition probabilities.
+    \item During playback, for each cycle, play a drum stroke on pulse $i$ if there is a 1 at bit $i$ in the binary representation of that cycle's rhythm integer.
 \end{enumerate}
 
 This approach was an improvement over purely random rhythms because it preserved
@@ -1317,7 +1316,7 @@ unsuitable.
 
 I then constructed my own dataset comprising of 30-second samples from seven
 waltz recordings performed by the Vienna Philharmonic Orchestra, all of which
-have noticeable and statistically significant micro-timing. Because this dataset
+have noticeable and statistically significant micro-timing. See Appendix~\ref{appendix_datasets_waltz} for more details. Because this dataset
 has no existing beat annotations, the next step was to produce my own.
 
 
@@ -1383,8 +1382,8 @@ Section~\ref{jembe_micro-timing}.
 The final part of my implementation consists of a pair of converter programs which enables importing and exporting music to/from my extended Sonic Pi language. This would be a useful tool for users, and it also prepares for the evaluation in Section~\ref{metre_evaluation}. The converters target MusicXML, a commonly used file format for encoding Western music notation which is based on XML \cite{good2001}.
 
 \begin{itemize}
-	\item \verb'convert_musicxml.py' uses the \verb'music21' Python library to parse an input MusicXML file into Python objects, which are then iterated over to produce Sonic Pi code
-	\item \verb'convert_sonicpi.rb' takes an input Sonic Pi file and iterates over it to produce \verb'music21' Python code. This code is then run automatically to generate the final MusicXML output
+	\item \verb'convert_musicxml.py' uses the \verb'music21' Python library to parse an input MusicXML file into Python objects, which are then iterated over to produce Sonic Pi code.
+	\item \verb'convert_sonicpi.rb' takes an input Sonic Pi file and iterates over it to produce \verb'music21' Python code. This code is then run automatically to generate the final MusicXML output.
 \end{itemize}
 
 The most interesting part of the converters is the \verb'convert_duration()' algorithm
@@ -1461,15 +1460,11 @@ I begin by showing the results of the
 data analysis which was conducted as part of the implementation. This is a
 crucial step towards being able to produce music with realistic micro-timing
 because it provides the data needed to populate the styles' probability
-distributions.
-
-Secondly, I describe the motivation, methods, and results of
+distributions. Secondly, I describe the motivation, methods, and results of
 a user study I conducted to evaluate how realistic the generated music sounds.
 This includes a detailed description of how the study was carried out, how the
 stimuli were constructed, and the full results. The section concludes with a
-discussion of the results and their significance.
-
-Finally, I use the MusicXML
+discussion of the results and their significance. Finally, I use the MusicXML
 converters implemented earlier to demonstrate the value gained by an
 implementation of metre within Sonic Pi and showcase its successful use.
 
@@ -1560,8 +1555,8 @@ jembe style provided comments supporting the success of the implementation. Sect
 To conduct the study, the following two hypotheses were tested on each style:
 
 \begin{enumerate}
-    \item \label{hypothesis_1} Participants think samples with the data-derived micro-timing (the ``correct'' timing) fit the style best
-    \item \label{hypothesis_2} Participants with more musical experience are more likely to think the correct timing fits best than those with less experience
+    \item \label{hypothesis_1} Participants think samples with the data-derived micro-timing (the ``correct'' timing) fit the style best.
+    \item \label{hypothesis_2} Participants with more musical experience are more likely to think the correct timing fits best than those with less experience.
 \end{enumerate}
 
 These hypotheses being accepted for a style would provide evidence for my
@@ -1675,7 +1670,7 @@ Once the displacements were calcualated (or derived from data), the probability 
 
 The waltz stimuli consisted of a 30-second excerpt of Johann Strauss II's ``The
 Blue Danube'' arranged for piano and played on Sonic Pi's piano synthesiser at
-190 bpm.
+190 bpm. See Appendix~\ref{appendix_code_blue_danube} for the code.
 
 Table 3 in Neuhoff et al.\ contains similar
 pulse-length data to their Table 4 (which I used for jembe above) but uses a different
@@ -1896,7 +1891,7 @@ music, as in Neuhoff et al.\ \cite{neuhoff2017}. Indeed, having expert participa
 So, despite access to expertise being an inevitable challenge with repertoires like jembe, this is a shortcoming that must be accepted in order to diversify the study of MIR.
 
 In addition to this study, I generated a full-length synthetic recording of
-Manjanin with the data-derived micro-timing. In addition to providing much
+Manjanin with the data-derived micro-timing (Appendix~\ref{appendix_code_manjanin}). In addition to providing much
 useful advice, Rainer Polak also gave an expert opinion on the full recording,
 describing it as ``realistic and beautiful''. Therefore, despite the unfamiliar
 participants in the study struggling to identify the expected pattern, I conclude that the implementation can successfully produce realistic music.
