@@ -511,7 +511,7 @@ designing my representation \cite{ariza2010}.
 
 The tree structure is implemented by the MetreLeaf and MetreTree classes (see
 Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default tree structure formed by these objects
-for both a \setmetre{4}{4} time signature and an unconventional, pathological example metre, and each object's duration. Note the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre (Figure~\ref{fig:tree_object_hierarchy_unconventional}) and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
+for both a \setmetre{4}{4} time signature and an unconventional, pathological example metre, and each object's duration. Note how the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
 
 \begin{figure}[ht]
     \centering
@@ -583,15 +583,15 @@ for both a \setmetre{4}{4} time signature and an unconventional, pathological ex
     \label{fig:unconventional_metre_notation}
 \end{figure}
 
-The tree data structures can only have a finite depth, whereas metrical hierarchies are infinitely deep (otherwise we would not be able to represent notes with very short durations). Therefore, we have to make assumptions about the structure of the hierarchy for levels deeper than defined by the data structure. In this case, I assume that each MetreLeaf is divided in two to get the next level.
+The tree data structures can only have a finite depth, whereas metrical hierarchies are infinitely deep (otherwise we would not be able to represent notes with very short durations). Therefore, we have to make assumptions about the structure of the hierarchy for levels deeper than those defined by the data structure. In this case, we assume that each MetreLeaf is divided into two to get the next level.
 
 
 \subsection{MetreLeaf class} \label{metreleaf}
 
 A MetreLeaf object is the leaf node of the metrical tree structure. It has an
 instance variable \verb'fraction' which represents the duration of the
-MetreLeaf in the metre as a fraction of a whole note. This is stored as a Rational -- a Ruby object representing a rational number as a simplified fraction. For
-example, a leaf node with the duration of a quarter note will have the value $\frac{1}{4}$.
+MetreLeaf as a fraction of a whole note. This is stored as a Rational -- a Ruby object representing a rational number as a simplified fraction. For
+example, a leaf node with the duration of one quarter note will have the value $\frac{1}{4}$.
 
 The class contains a \verb'subdivide()' method, which divides the MetreLeaf by two a
 given number of times, $s$. It returns a new MetreTree with $2^s$ MetreLeaf children, each of value $f/2^s$ where $f$ is the fraction of the original MetreLeaf.
@@ -600,8 +600,8 @@ given number of times, $s$. It returns a new MetreTree with $2^s$ MetreLeaf chil
 \subsection{MetreTree class} \label{metretree}
 
 A MetreTree object represents the hierarchical tree or subtree of a metre. The
-instance variable \verb'sequence' is an ordered list containing any combination of
-MetreLeaf and other MetreTree objects representing this node's children. For
+instance variable \verb'sequence' is an ordered list representing this node's children and contains any combination of
+MetreLeaf objects and other MetreTree objects. For
 example, the previous example hierarchy in Figure~\ref{fig:tree_object_hierarchy_4_4} could also be written in list form as:
 \[\left[\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right],\left[\frac{1}{8},\frac{1}{8}\right]\right]\]
 Each list is a
@@ -612,7 +612,7 @@ detail below.
 
 \subsubsection{Getting metrical levels} \label{get_level}
 
-Recall that the levels of a metrical hierarchy are called \emph{metrical levels} -- the basis of which is the beat level. The beat is divided to get \emph{division levels}, and grouped to get \emph{multiple levels}. A useful transformation on a MetreTree is to flatten the tree structure to a specified depth. This allows us to access the sequence of events at a given metrical level.
+Recall that the depth levels of a metrical hierarchy are called \emph{metrical levels} -- the basis of which is the beat level. The beat is divided to get \emph{division levels}, and grouped to get \emph{multiple levels}. A useful transformation on a MetreTree is to flatten the tree structure to a specified depth. This allows us to access the sequence of events at a given metrical level.
 
 This is implemented by the \verb'get_level()' method, which returns a flat MetreTree at
 a given metrical level $l$. A flat MetreTree is defined as one whose children are
@@ -620,7 +620,7 @@ only MetreLeafs, meaning there is no hierarchy (e.g.\ $\left[\frac{1}{8},\frac{1
 
 This method is split into two algorithms:
 \begin{itemize}
-    \item \verb'get_division_level()' computes the sequence for division levels ($l>0$), and the beat level ($l=0$).
+    \item \verb'get_division_level()' computes the sequence for division levels ($l>0$) and the beat level ($l=0$).
 	\item \verb'get_multiple_level()' computes a possible sequence for multiple levels ($l<0$).
 \end{itemize}
 
@@ -644,7 +644,7 @@ level.
     \ForEach{child \KwForIn @sequence}{
         \eIf{child is a MetreLeaf}{
             \eIf{$l>0$}{
-                append child subdivided $l$ times to new\_sequence\;
+                append (child subdivided $l$ times) to new\_sequence\;
             }{
                 append child to new\_sequence\;
             }
@@ -673,12 +673,12 @@ example, if level $l+1$ has four nodes, they will be clustered in groups of two.
 has nine nodes, they will be clustered in groups of three.
 
 An important consideration when implementing the \verb'get_level()' method was to
-maximise its efficiency, because it is called at least once per note. The
+maximise its efficiency, because it is called often -- at least once per note. The
 running time of the algorithm is $O(\left\lvert l\right\rvert)$, where $\left\lvert l\right\rvert$ is the number of MetreLeafs in the
 hierarchy. To improve the efficiency, I implemented a cache of metrical levels for each
-MetreTree object to store the expensive computations for reuse.
+MetreTree object to store the expensive computations for later reuse.
 
-Some examples of the output of \verb'get_level()' for the following unconventional hierarchy (from Figure~\ref{fig:tree_object_hierarchy_unconventional}) are shown in Table~\ref{table:get_level}:
+Some examples of the output of \verb'get_level()' for the following pathological hierarchy (from Figure~\ref{fig:tree_object_hierarchy_unconventional}) are shown in Table~\ref{table:get_level}:
 \[
     \left[
         \left[\frac{1}{8},\frac{1}{8}\right],
@@ -695,11 +695,11 @@ Some examples of the output of \verb'get_level()' for the following unconvention
         \hline
         $l$     & \verb'get_level'$(l)$ \\
         \hline
-        $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{3}{32},\frac{3}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{8},\frac{1}{8},\frac{5}{16},\frac{3}{16} \right]$ \\
-        $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{3}{16},\frac{1}{16},\frac{1}{16},\frac{1}{4},\frac{1}{2} \right]$ \\
-        $0$     & $\displaystyle \left[ \frac{1}{4},\frac{1}{4},\frac{1}{8},\frac{3}{4} \right]$ \\
+        $-2$    & $\displaystyle \left[ \frac{11}{8} \right]$ \\
         $-1$    & $\displaystyle \left[ \frac{1}{2},\frac{7}{8} \right]$ \\
-        $-2$    & $\displaystyle \left[ \frac{11}{8} \right]$ \\ [1ex]
+        $0$     & $\displaystyle \left[ \frac{1}{4},\frac{1}{4},\frac{1}{8},\frac{3}{4} \right]$ \\
+        $1$     & $\displaystyle \left[ \frac{1}{8},\frac{1}{8},\frac{1}{16},\frac{3}{16},\frac{1}{16},\frac{1}{16},\frac{1}{4},\frac{1}{2} \right]$ \\
+        $2$     & $\displaystyle \left[ \frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{16},\frac{1}{32},\frac{1}{32},\frac{3}{32},\frac{3}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{32},\frac{1}{8},\frac{1}{8},\frac{5}{16},\frac{3}{16} \right]$ \\ [1ex]
         \hline
     \end{tabular}
     \renewcommand{\arraystretch}{1.0}
@@ -709,7 +709,7 @@ Some examples of the output of \verb'get_level()' for the following unconvention
 
 \subsubsection{Getting exact metrical events} \label{metrical_level_indices}
 
-The second key method in the MetreTree class is \verb'metrical_level_indices()'. We define an \emph{offset} as a position in the metric cycle represented as the number of quarter lengths since the beginning of the cycle. For a
+The second key method in the MetreTree class is \verb'metrical_level_indices()'. We define an \emph{offset} as a position in the metric cycle represented as the number of quarter lengths (the length of one quarter note) since the beginning of the cycle. For a
 given offset, this algorithm finds any metrical events
 which the offset occurs exactly on, and returns their index.
 
@@ -768,7 +768,7 @@ be applied to a note at a given offset (see Section~\ref{applying_micro-timing})
             \end{forest}
         \end{adjustbox}\qquad
     }
-    \caption{An example metrical hierarchy for \setmetre{2}{4} showing which metrical events at each level (if any) offsets $x$ and $y$ occur on. $x$ occurs on the first event in all three levels. $y$ only occurs exactly on an event in Levels 1 and 2 -- namely events 3 and 6, respectively.}
+    \caption{An example metrical hierarchy for \setmetre{2}{4} showing which metrical events at each level (if any) offsets $x$ and $y$ occur on. $x$ occurs on the first event in all three levels. $y$ only occurs exactly on an event in Levels 1 and 2 -- namely events with indices 3 and 6, respectively.}
     \label{fig:metrical_level_indices_example}
 \end{figure}
 
@@ -778,15 +778,15 @@ be applied to a note at a given offset (see Section~\ref{applying_micro-timing})
 The Metre class is a subclass of MetreTree which acts as a wrapper for the
 hierarchy stored in a MetreTree. It implements functionality allowing a user to
 specify a metre by a time signature string (e.g.\ \verb|'4/4'|) for common metres, or a
-nested list of Rationals representing the hierarchy (e.g.\ \verb'[[1/8r,1/8r],[1/8r,[1/16r,1/16r]],1/8r,3/4r]'). It also has a method which
-converts a duration in quarter lengths (the length of one quarter note) to Sonic
+nested list of Rationals representing the hierarchy (e.g.\ \verb'[[1/8r,1/8r],[1/16r,3/16r],1/8r,[1/4r,[5/16r,3/16r]]]'). It also has a method which
+converts a duration in quarter lengths to Sonic
 Pi beats.
 
 
 \subsection{Bar class} \label{bar_class}
 
-A bar\footnote{Known as a bar in British English, and a measure in American English.} is a common term used in Western music theory for a single
-metric cycle\footnote{A more precise definition would account for \emph{hypermetre}, where bars occur at the beat level \cite{neal2000}, but this is not required here.}. The Bar class is a representation of this, and each instance of it
+A bar\footnote{Known as a \emph{bar} in British English, and a \emph{measure} in American English.} is a common term used in Western music theory for a single
+metric cycle\footnote{A more precise definition would account for \emph{hypermetre}, where bars occur at the beat level \cite{neal2000}, but the simple definition is sufficient for our purposes.}. The Bar class is a representation of this, and each instance of it
 has an associated metre. A Bar object is responsible for:
 \begin{itemize}
 	\item Keeping track of the playback position through the cycle (the \verb'current_offset' variable).
@@ -797,7 +797,7 @@ updating the bar's playback position accordingly.
 \end{itemize}
 
 A note's length is specified as a metrical level and a duration. The duration
-is in units of an event at the specified metrical level, so acts as a multiplier.
+is in units of an event at the specified metrical level, and acts as a multiplier.
 For example, if a note's length is defined as $(l,d)=(0,3)$, its unit is the length of an event at level $l=0$, and it lasts for $d=3$ of these units.
 
 The \verb'add_note()' method handles checking if a note fits into the bar, as shown in
@@ -834,7 +834,7 @@ an exception is raised. This ensures the bar obeys the duration of its metre.
 \section{Playing music} \label{playing_music}
 
 Now that the framework of musical metre has been established, we can look at how
-this is used by the user to play music. This section describes the new Sonic Pi
+this is used to play music. This section describes the new Sonic Pi
 commands I have implemented for controlling metre, and adding notes and rests.
 Figure~\ref{fig:sonicpi_language_comparison} shows a comparison between the original Sonic Pi commands (left), my
 alternative commands (centre), and traditional Western music notation (right)
@@ -890,12 +890,12 @@ A metre is created with the \verb'use_metre' or \verb'with_metre' commands. Thes
 designed to match the syntax of existing Sonic Pi commands such as \verb'use_fx' and \verb'with_fx'. Sonic Pi uses multiple threads of execution to allow different musical parts to play simultaneously. Each of these commands operates only within its current thread. See Section~\ref{multi-threaded_synchronisation} for more on multi-threading.
 
 \begin{itemize}
-	\item \verb'use_metre('$m$\verb')' changes the current thread's metre to $m$ (using a thread local variable).
+	\item \verb'use_metre('$m$\verb')' changes the current thread's metre to $m$ (using a thread-local variable).
 	\item \verb'with_metre('$m$\mintinline{ruby}|) bar do ... end| executes a block of user code with a specified metre $m$, then restores the thread's original metre.
 \end{itemize}
 
 The \mintinline{ruby}|bar do ... end| command creates a new Bar object, stores this to a
-thread local variable, then executes a block of user code. If the Bar object
+thread-local variable, then executes a block of user code. If the Bar object
 still has space remaining after the block has run, the function then sleeps for
 the appropriate time.
 
@@ -911,7 +911,7 @@ length is given as a metrical level and a duration, as defined in Section~\ref{b
 
 The \verb'add_note' command works as follows:
 \begin{enumerate}
-    \item Gets the current Bar object from the thread local variables.
+    \item Gets the current Bar object from the thread-local variables.
     \item Calls the Bar's \verb'add_note()' method to check if the note will fit into the current bar.
     \item Passes the note pitch to Sonic Pi's \verb'play' function which creates the sound.
     \item Sleeps for the duration of the note.
@@ -1009,7 +1009,7 @@ For example, if the sampled timings, $T_l$, for each level, $l$, are:
 and the metrical level indices, $L_l$, for each level, $l$, are:
 \begin{equation*}
     \begin{split}
-        L_0 &= 0 \\
+        L_0 &= 1 \\
         L_1 &= 3
     \end{split}
 \end{equation*}
@@ -1031,7 +1031,7 @@ Therefore, the note will be played 0.08 quarter lengths late.
 An important part of producing music in Sonic Pi is the ability to have multiple
 instruments/parts playing simultaneously. This is accomplished by having
 separate threads of execution. Aaron et al.'s previous work on Sonic Pi's
-temporal semantics \cite{aaron2014} ensures music in separate threads remains in time.
+temporal semantics ensures music in separate threads remains in time \cite{aaron2014}.
 Because of the probabilistic nature of my micro-timing implementation, each
 thread needs to have the same set of randomly generated timing values to remain
 perfectly synchronised. Otherwise, notes in different threads that are supposed
@@ -1063,7 +1063,6 @@ of the Bar class is as follows:
 
 \begin{minted}{ruby}
 class Bar
-
     def initialize()
         previous_bar_number = __thread_locals.get(:sonic_pi_bar_number)
         if previous_bar_number
@@ -1079,7 +1078,7 @@ end
 If this is the first bar in the thread, the Bar object will request bar number 0
 from the metre, otherwise it will request the next bar number in sequence. The
 metre returns the actual current bar number, which is then stored in the thread
-for the next bar to use.
+locals for the next bar to use.
 
 \begin{minted}{ruby}
 class SynchronisedMetre < Metre
@@ -1161,17 +1160,13 @@ Section~\ref{data_analysis_results}.
 \subsection{Datasets} \label{jembe_datasets}
 
 Previous research into the micro-timing of Malian jembe music has meant there
-are some high-quality datasets of processed live recordings available. See Appendix~\ref{appendix_datasets_jembe} for more performer and recording details.
+are some high-quality datasets of processed live recordings available.
 
 The first dataset is from Jacoby et al.\ \cite{jacoby2021} and consists of 11
 processed recordings of a piece called `Suku', which is a very commonly played
-piece in this style. The recordings were made by Rainer Polak in Bamako, Mali in
-2016 \cite{jacoby2021supp}.
-
-The second dataset is from the Interpersonal Entrainment in Music Performance
+piece in this style. The second dataset is from the Interpersonal Entrainment in Music Performance
 (IEMP) Data Collection \cite{polak2020,clayton2021}. This consists of 15 recordings
-across three different pieces: `Manjanin', `Maraka', and `Woloso'. The
-recordings were again made by Polak in Bamako in 2006 and 2007.
+across three different pieces: `Manjanin', `Maraka', and `Woloso'. Both datasets here use recordings made by Rainer Polak in Mali -- see Appendix~\ref{appendix_datasets_jembe} for more recording details and a list of performers.
 
 The datasets supply the following data:
 \begin{itemize}
@@ -1184,20 +1179,18 @@ The datasets supply the following data:
 
 \subsection{Micro-timing estimation} \label{jembe_micro-timing}
 
-The pieces of jembe music in the dataset use a metre\footnote{See Polak \cite{polak2010} for an ethnographically sensitive discussion of the extent to which `metric location' applies in this context.} with four beats, each of
+The pieces of jembe music in the dataset use a metre\footnote{See Polak \cite{polak2010} for an ethnographically sensitive discussion of the extent to which metre applies in this context.} with four beats, each of
 which divides into three, for a total of 12 metrical events at the first division
 level (\setmetre{12}{8} in Western classical notation). It is at this level, referred to as the `pulse', that the micro-timing occurs.
 
 Each event at the pulse level has a position in the cycle at which a note would
 occur if it were isochronous (the \emph{categorical} timing). The displacement from this position describes the
-micro-timing (or \emph{expressive} timing) of a note, and this is what is stored in the probability
+micro-timing (or \emph{expressive} timing) of the note, and this is what is stored in the probability
 distributions described in Section~\ref{style_class}. Equation~\ref{eq:displacement_from_phase} shows how the displacement is calculated from the phase given by the datasets.
-
 \begin{equation}
     \textnormal{displacement} = \frac{(\textnormal{phase} \times \textnormal{beat division}) - \textnormal{metric location}}{2}
     \label{eq:displacement_from_phase}
 \end{equation}
-
 The phase is multiplied by the beat division (in this case, 3) to convert it
 into pulse units. The metric location at the pulse level (an integer from 0 to 11)
 is subtracted to get the displacement. The final division by two converts the displacement
@@ -1213,8 +1206,7 @@ considered two types of approach for this probability density estimation:
 \begin{itemize}
 	\item Kernel density estimation (KDE) (non-parametric) -- applies smoothing to the
 data to fit an arbitrary distribution.
-	\item Maximum likelihood estimation (MLE) (parametric) -- choose an existing
-distribution to fit and estimate the parameters which best fit the data.
+	\item Maximum likelihood estimation (MLE) (parametric) -- estimates the parameters of a given existing distribution which best fit the data.
 \end{itemize}
 
 The advantage of KDE is that it would be able to accurately represent any shape
@@ -1235,20 +1227,19 @@ correction to get an unbiased estimator of $\hat{\sigma}$ \cite{upton2014}.
 
 Generating a synthetic piece of jembe music requires analysis of other musical
 features as well as the micro-timing to sound realistic. One of these is the
-tempo (how fast or slow the beat is), which is measured in beats per minute
+\emph{tempo} (how fast or slow the beat is), which is measured in beats per minute
 (bpm). The tempo of a jembe piece of music typically increases substantially
 over the duration of the performance \cite{jacoby2021}, with the last 15 seconds or
 so showing the tempo increasing at a much faster rate.
 
-The inter-beat interval (IBI) is defined as the time between two consecutive beats in a
+The \emph{inter-beat interval} (IBI) is defined as the time between two consecutive beats in a
 piece of music, from which the instantaneous tempo can be calculated \cite{dixon2001}.
 A moving average can be applied to the instantaneous tempo to obtain an estimate
 of the global tempo.
 
 For the jembe data, I first filtered all the onsets to include just those played
-by Jembe 2 (because it plays on each beat \cite{jacoby2021}), then filtered these to
+by Jembe 2 (because it plays on every beat \cite{jacoby2021}), then filtered these to
 just onsets on the beats. I then calculated the inter-beat interval using Equation~\ref{eq:ibi}, where $b_i$ is the onset time of the $i$th beat. This is then converted to bpm by Equation~\ref{eq:tempo}. A moving average with window size 10 is then applied to smooth the tempo estimate.
-
 \begin{equation}
     \mathrm{IBI}_i = b_i - b_{i-1}
     \label{eq:ibi}
@@ -1257,10 +1248,9 @@ just onsets on the beats. I then calculated the inter-beat interval using Equati
     t_i = \frac{60}{\mathrm{IBI}_i}
     \label{eq:tempo}
 \end{equation}
-
 Inspection of the smoothed tempo graphs (Section~\ref{jembe_tempo_estimation_results}) showed a logarithmic trend for the first $\sim95\%$ of the piece. A sharper increase follows this which was
 modelled by a quadratic curve. To fit curves to the data, I used the \verb'optimize.curve_fit' function from the SciPy Python library, which uses a non-linear least
-squares method. The parameters estimated by the curve fitting are then used in Sonic Pi
+squares method \cite{more1977}. The parameters estimated by the curve fitting are then used in Sonic Pi
 to control the tempo of a synthetic jembe piece during playback.
 
 
@@ -1322,7 +1312,7 @@ has no existing beat annotations, the next step was to produce my own.
 
 \subsection{Beat tracking} \label{beat_tracking}
 
-Beat tracking is the process of identifying the locations of beats in an audio
+\emph{Beat tracking} is the process of identifying the locations of beats in an audio
 recording of a piece of music. Since the beat level is where the micro-timing in
 the Viennese waltz occurs, no additional onset detection was necessary. The beat
 tracking could be approached automatically with existing beat tracking
@@ -1334,8 +1324,7 @@ isochronous, i.e.\ having no systematic micro-timing, as is the case in most
 Western music. As a result, they would often skew the detected beats towards
 being isochronous, therefore not capturing the micro-timing. Of all these
 implementations, the beat tracking in the libfmp Python library \cite{mueller2021} (a
-dynamic programming approach from Müller's book on the Fundamentals of Music Processing
-\cite{mueller2021b}) performed the best. After some
+dynamic programming approach introduced by Müller \cite{mueller2021b}) performed the best. After some
 small manual corrections, the beat onsets were ready for analysis, as described
 in Section~\ref{waltz_micro-timing}.
 
@@ -1351,7 +1340,6 @@ involves first identifying the start and end of each cycle, estimating the onset
 of each beat as if they were isochronous, then finding the difference between this
 and the actual onset to get the displacement. The full calculation is shown in
 Equation~\ref{eq:displacement_from_onset}, where $i$ ranges over the indices of all the onsets in the piece.
-
 \begin{equation}
 \begin{split}
     \mathrm{metricLocation}_i &= i \;\mathrm{mod}\; 3 \\
@@ -1365,15 +1353,13 @@ Equation~\ref{eq:displacement_from_onset}, where $i$ ranges over the indices of 
 \end{split}
 \label{eq:displacement_from_onset}
 \end{equation}
-
-The data is assumed to have exactly one onset for each beat in the piece and the
+The data is assumed to have exactly one onset for each beat in the piece, and the
 duration of a cycle is assumed to be the time between its first beat and the
 first beat of the next cycle.
 
-Once the displacements have been derived, maximum
-likelihood estimation is used to fit the probability distributions, as described in
+Once the displacements had been derived, maximum
+likelihood estimation was used to fit the probability distributions, as described in
 Section~\ref{jembe_micro-timing}.
-\newpage
 
 
 
@@ -1401,7 +1387,6 @@ such level can be found, then deeper metrical levels must be searched, where we
 assume they are divided into two each time. The note's duration in quarter
 lengths is first converted to a fraction by dividing by 4. The level $l$ and
 multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multiplier}, where $\log_2\left(\frac{n_d}{\mathrm{deepestDenominator}}\right)$ is the number of levels deeper we need to go.
-
 \begin{equation}
     \begin{split}
         f &= \frac{\mathrm{duration}}{4} \\
@@ -1410,16 +1395,15 @@ multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multip
     \end{split}
     \label{eq:duration_to_level_multiplier}
 \end{equation}
-\newpage
 
 
 
 \section{Repository overview} \label{repository}
 
-There are two main components to the repository: the Sonic Pi code, and the data analysis code. The structure of the \verb'sonic-pi' directory follows that of the main Sonic Pi source code\footnote{\url{https://github.com/sonic-pi-net/sonic-pi/tree/stable}}, which is not included here. All code in the repository was written by me, except where specified below.
+There are three main components to the repository: the Sonic Pi code, the data analysis code, and example Sonic Pi code. The structure of the \verb'sonic-pi' directory follows that of the main Sonic Pi source code\footnote{\url{https://github.com/sonic-pi-net/sonic-pi/tree/stable}}, which is not included here. All code in the repository was written by me, except where specified below.
 
 The following is the high-level structure of the repository:
-\vspace{5mm}
+\vspace{2mm}
 \dirtree{%
 .1 repository/.
 .2 sonic-pi/\DTcomment{Code for micro-timing implementation}.
@@ -1437,7 +1421,6 @@ The following is the high-level structure of the repository:
 .5 test\_metre.rb\DTcomment{Unit testing for metre operations}.
 .2 micro-timing-data-analysis/\DTcomment{Code for data analysis}.
 .3 data/\DTcomment{Raw data of recordings}.
-.3 .gitignore.
 .3 analysis.py\DTcomment{Loads data for analysis}.
 .3 beattrack.py\DTcomment{Performs beat tracking on an audio file}.
 .3 convert\_musicxml.py\DTcomment{Converts MusicXML to Sonic Pi}.
@@ -1445,6 +1428,7 @@ The following is the high-level structure of the repository:
 .3 convert\_transcription.py\DTcomment{Converts jembe transcription text files to Sonic Pi}.
 .3 metre.rb\DTcomment{Copy of metre code for converters}.
 .3 piece.py\DTcomment{Class for analysing a single piece}.
+.2 examples/\DTcomment{Example Sonic Pi code}.
 }
 
 
@@ -1483,7 +1467,7 @@ then describe the results of the jembe tempo estimation.
 
 Figure~\ref{fig:suku_histogram} shows the results of the micro-timing estimation (Section~\ref{jembe_micro-timing}) for one of
 the jembe pieces, `Suku'. The histograms show the positions within the cycle
-that each of the 12 pulses occurred at (phase). The dashed lines show where the
+where each of the 12 pulses occurred (phase). The dashed lines show where the
 event would occur if they were isochronous, so the existence of the micro-timing
 can be seen clearly by the positions of the second and third pulses in each beat.
 By examining the positions of the histograms, we can see that the length of each pulse follows a short-medium-long pattern (SML), which is consistent across
@@ -1499,7 +1483,7 @@ the other jembe pieces showed the same pattern.
 \end{figure}
 
 Figure~\ref{fig:waltz_histogram} shows the results for the waltz dataset (Section~\ref{waltz_data_analysis}). The calculations
-use the first beat as the definition for the start of the cycle, so every beat 1
+use the first beat as the definition for the start of the cycle, so every Beat 1
 has a displacement of 0, which is why its histogram has no variance. The early onset
 of the second beat can be clearly seen in the plot ($\mu=-0.0743$, $\sigma=0.0795$). A
 one-sample \textit{t}-test confirms the micro-timing is significant ($t=-16.5$, $p=0.000$). Beats 1 and 3 show no significant deviation from the metrical grid, so a short-long-medium pattern (SLM) is observed.
@@ -1537,8 +1521,8 @@ The key aim of this project was to be able to produce realistic style-specific
 micro-timing in Sonic Pi. To evaluate the realism, I have conducted a user study
 focusing on the two case study styles: Malian jembe and Viennese waltz. The
 methods used in this study were partly based on Neuhoff, Polak, and Fischinger's
-previous work \cite{neuhoff2017} which studied experts' perception and judgement of
-micro-timing in Malian jembe music.
+previous work which studied experts' perception and judgement of
+micro-timing in Malian jembe music \cite{neuhoff2017}.
 
 Participants were first primed on real-life
 examples of music from each style, then were presented with five synthetic
@@ -2005,8 +1989,7 @@ jembe music, who described the results as ``realistic and beautiful''.
 \section{Lessons learnt} \label{lessons_learnt}
 
 This project has given me the opportunity to develop my understanding of areas
-of computer science such as data science, distributed systems, and tree data
-structures. I have also learnt a lot about micro-timing in music, the jembe
+of computer science such as data science, distributed systems, and computer music. I have also learnt a lot about micro-timing in music, the jembe
 style of music, and the theory of metre.
 
 One thing I would do differently is to more carefully design the metre
@@ -2034,7 +2017,7 @@ creation of a larger dataset of Viennese waltz recordings would be beneficial in
 deriving more accurate distributions.
 
 Finally, future work could also involve implementing a control within Sonic Pi
-to dynamically adjust the ``strength'' of the micro-timing, i.e.\ transform the
+to dynamically adjust the ``strength'' of the micro-timing, i.e.\ to transform the
 timing displacements between being style-specific and isochronous.
 
 
