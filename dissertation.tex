@@ -1,4 +1,4 @@
-\documentclass[12pt,twoside,openright]{report}
+\documentclass[12pt]{report}
 
 % Hyperlink references
 \usepackage[pdfborder={0 0 0}]{hyperref}
@@ -48,7 +48,7 @@
 
 \addbibresource{bibliography.bib}
 
-\raggedbottom
+\flushbottom
 
 \DeclareRobustCommand{\setmetre}[2]{\ensuremath{
   \vcenter{\offinterlineskip
@@ -82,7 +82,7 @@
 \end{titlepage}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Proforma, table of contents and list of figures
+% Proforma and table of contents
 
 \pagestyle{plain}
 
@@ -104,7 +104,7 @@ I, Max Johnson of Clare College, being a candidate for Part II of the Computer S
 \bf Candidate number:   & 2388B \\
 \bf Project title:      & Musical micro-timing for live coding \\
 \bf Examination:        & Computer Science Tripos -- Part II, July 2022  \\
-\bf Word count:         & TBC \\
+\bf Word count:         & 11,994 \\
 \bf Code line count:    & 1,937 \\
 \bf Project originator: & Mark Gotham \\
 \bf Supervisor:         & Mark Gotham
@@ -132,7 +132,7 @@ None.
 
 
  
-\newpage
+\pagebreak
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,7 +160,7 @@ criteria set out in my project proposal and one suggested extension.
 \section{Motivation} \label{motivation}
 
 Metre is a fundamental musical concept which describes the ways in which periodic events, such as beats, are grouped and divided to form a hierarchy \cite{london2012}. Micro-timing in music refers to small deviations in the timing of notes from
-their exact, grid-like positions in the metre (see Section~\ref{metre_background} for details). These
+their exact, grid-like positions in the metre. These
 deviations occur naturally in all human performances, but when they occur
 systematically, they make an important contribution to what defines a musical
 style. Therefore, this a very valuable feature when creating realistic music.
@@ -171,7 +171,7 @@ music in certain styles more realistically. It also allows for further
 creativity, such as by applying the micro-timing strategies of one style to
 music from another style.
 
-Musical live coding (Section~\ref{live_coding_background}) is a way of creating and performing music by writing
+Musical live coding is a way of creating and performing music by writing
 and modifying code in real time \cite{magnusson2011}. This was an interesting area to focus on for
 this project because the nature of live coding allows for creative applications
 of micro-timing, such as adjusting micro-timing throughout a performance.
@@ -242,15 +242,16 @@ The metre of a piece of music causes some notes to feel more strongly accented \
 
 Figure~\ref{fig:metre_hierarchy_example} 
 shows the beat level, and some of the division and multiple levels for a simple metre, as well as a tree representation of the metrical hierarchy. Note how the first beat occupies the most metrical levels -- we would expect that significant events might occur here, such as chord changes.
+\pagebreak
 
-Western classical definitions define a metre as \emph{simple} if its first division level splits the beat into two, and \emph{compound} if it splits into three \cite{omt2021}. A \emph{time signature} is a way of notating a metre as a fraction, $\frac{X}{Y}$, which is commonly used in Western music notation \cite{london2012}. For simple metres, $X$ is the number of beats in a cycle and $Y$ represents the length of each beat. For compound metres, $X$ is the number of pulses at the first division level in a cycle and $Y$ represents the length of each of these pulses. For example, the metre in Figure~\ref{fig:metre_hierarchy_example} can be notated as \setmetre{4}{4}, meaning a cycle consists of 4 beats, each of which has the duration of a quarter note\footnote{Known as a \emph{quarter note} in American English, and a \emph{crotchet} in British English. American English note names are used here because of their clear relation to the notes' durations.}.
-
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{figures/metre_example.pdf}
     \caption{Example metrical hierarchy for the \setmetre{4}{4} time signature. Left: The hierarchy as notes in traditional Western music notation. Right: The hierarchy as a tree of durations.}
     \label{fig:metre_hierarchy_example}
 \end{figure}
+
+Western classical definitions define a metre as \emph{simple} if its first division level splits the beat into two, and \emph{compound} if it splits into three \cite{omt2021}. A \emph{time signature} is a way of notating a metre as a fraction, $\frac{X}{Y}$, which is commonly used in Western music notation \cite{london2012}. For simple metres, $X$ is the number of beats in a cycle and $Y$ represents the length of each beat. For compound metres, $X$ is the number of pulses at the first division level in a cycle and $Y$ represents the length of each of these pulses. For example, the metre in Figure~\ref{fig:metre_hierarchy_example} can be notated as \setmetre{4}{4}, meaning a cycle consists of 4 beats, each of which has the duration of a quarter note\footnote{Known as a \emph{quarter note} in American English, and a \emph{crotchet} in British English. American English note names are used here because of their clear relation to the notes' durations.}.
 
 \subsubsection{Micro-timing} \label{micro-timing_background}
 
@@ -317,7 +318,7 @@ Viennese waltz music, which offers a Western comparison.
 
 Jembe ensemble music is a style of music involving a small group of drummers
 which originated in West Africa. The primary drum is the eponymous jembe, which
-is a goblet-shaped drum played with the bare hands (Figure~\ref{fig:jembe_photo}). This is usually accompanied
+is a goblet-shaped drum played with the bare hands (shown in Figure~\ref{fig:jembe_photo}). This is usually accompanied
 by the dundun, which is a cylindrical drum played with a stick \cite{polak2010}. In a
 traditional jembe trio, there are two jembe players and one dundun player, with
 Jembe 1 having a lead role, Jembe 2 playing a simple accompaniment, and Dundun
@@ -510,8 +511,8 @@ programming language, I used the popular \verb'music21' Python library as a basi
 designing my representation \cite{ariza2010}.
 
 The tree structure is implemented by the MetreLeaf and MetreTree classes (see
-Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default tree structure formed by these objects
-for both a \setmetre{4}{4} time signature and an unconventional, pathological example metre, and each object's duration. Note how the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
+Sections~\ref{metreleaf} and~\ref{metretree} for more details). Figure~\ref{fig:tree_object_hierarchy} shows the default tree structure formed by these objects and their durations
+for both a \setmetre{4}{4} time signature and an unconventional, pathological example metre. Note how the duration of a parent node is the sum of the durations of its children. Figure~\ref{fig:unconventional_metre_notation} shows some example music for the unconventional metre and how the grouping of notes in Western music notation is directed by the metrical hierarchy.
 
 \begin{figure}[ht]
     \centering
@@ -663,6 +664,7 @@ level.
     \Return{new MetreTree made from new\_sequence}
     \label{alg:getDivisionLevel}
 \end{algorithm}
+\pagebreak
 
 The \verb'get_multiple_level()' algorithm performs an estimate of the structure of
 higher metrical levels by clustering nodes together. It is an estimate because this information is not in the
@@ -676,7 +678,7 @@ An important consideration when implementing the \verb'get_level()' method was t
 maximise its efficiency, because it is called often -- at least once per note. The
 running time of the algorithm is $O(\left\lvert l\right\rvert)$, where $\left\lvert l\right\rvert$ is the number of MetreLeafs in the
 hierarchy. To improve the efficiency, I implemented a cache of metrical levels for each
-MetreTree object to store the expensive computations for later reuse.
+MetreTree object to store expensive computations for later reuse.
 
 Some examples of the output of \verb'get_level()' for the following pathological hierarchy (from Figure~\ref{fig:tree_object_hierarchy_unconventional}) are shown in Table~\ref{table:get_level}:
 \[
@@ -711,7 +713,7 @@ Some examples of the output of \verb'get_level()' for the following pathological
 
 The second key method in the MetreTree class is \verb'metrical_level_indices()'. We define an \emph{offset} as a position in the metric cycle represented as the number of quarter lengths (the length of one quarter note) since the beginning of the cycle. For a
 given offset, this algorithm finds any metrical events
-which the offset occurs exactly on, and returns their index.
+which occur exactly at this offset, and returns their index.
 
 Consider the example shown in Figure~\ref{fig:metrical_level_indices_example}. Offset $x$
 occurs on the first event of all three levels, so the function would return $L_0(x)=L_1(x)=L_2(x)=0$, where $L_l(x)$ is the index of an event at level $l$ that offset $x$ occurs on. Offset $y$ occurs only on the last event of Level 1 and the second-to-last event of Level 2, so the function would return $L_1(y)=3, L_2(y)=6$.
@@ -798,13 +800,13 @@ updating the bar's playback position accordingly.
 
 A note's length is specified as a metrical level and a duration. The duration
 is in units of an event at the specified metrical level, and acts as a multiplier.
-For example, if a note's length is defined as $(l,d)=(0,3)$, its unit is the length of an event at level $l=0$, and it lasts for $d=3$ of these units.
+For example, if a note's length is defined as $(l,d)=(0,3)$, its unit length is the duration of an event at level $l=0$, and it lasts for $d=3$ of these units.
 
 The \verb'add_note()' method handles checking if a note fits into the bar, as shown in
 Algorithm~\ref{alg:add_note}. If a note cannot fit into the bar's remaining time,
 an exception is raised. This ensures the bar obeys the duration of its metre.
 
-\begin{algorithm}
+\begin{algorithm}[h]
     \SetKwFor{RepeatTimes}{repeat}{times do}{end}
     \SetKw{Raise}{raise}
 
@@ -839,6 +841,7 @@ commands I have implemented for controlling metre, and adding notes and rests.
 Figure~\ref{fig:sonicpi_language_comparison} shows a comparison between the original Sonic Pi commands (left), my
 alternative commands (centre), and traditional Western music notation (right)
 for a single bar of \setmetre{4}{4}.
+\newpage
 
 \begin{figure}[ht]
     \centering
@@ -1133,6 +1136,7 @@ race conditions which might cause bars to get different timing values.
     \caption{Sequence diagram demonstrating the behaviour of bar number synchronisation with multiple threads. Values along the vertical axes show that thread's bar number counter. Arrows represent method calls and their return values.}
     \label{fig:multi-threading_sequence_diagram}
 \end{figure}
+\pagebreak
 
 Figure~\ref{fig:multi-threading_sequence_diagram} is a sequence diagram demonstrating the behaviour of the synchronisation
 in the presence of multiple threads. Each object/thread's bar number counter is
@@ -1360,12 +1364,13 @@ first beat of the next cycle.
 Once the displacements had been derived, maximum
 likelihood estimation was used to fit the probability distributions, as described in
 Section~\ref{jembe_micro-timing}.
+\newpage
 
 
 
 \section{MusicXML converters} \label{musicxml_converters}
 
-The final part of my implementation consists of a pair of converter programs which enables importing and exporting music to/from my extended Sonic Pi language. This would be a useful tool for users, and it also prepares for the evaluation in Section~\ref{metre_evaluation}. The converters target MusicXML, a commonly used file format for encoding Western music notation which is based on XML \cite{good2001}.
+The final part of my implementation consists of a pair of converter programs which enable importing and exporting music to/from my extended Sonic Pi language. This would be a useful tool for users, and it also prepares for the evaluation in Section~\ref{metre_evaluation}. The converters target MusicXML, a commonly used file format for encoding Western music notation which is based on XML \cite{good2001}.
 
 \begin{itemize}
 	\item \verb'convert_musicxml.py' uses the \verb'music21' Python library to parse an input MusicXML file into Python objects, which are then iterated over to produce Sonic Pi code.
@@ -1387,6 +1392,7 @@ such level can be found, then deeper metrical levels must be searched, where we
 assume they are divided into two each time. The note's duration in quarter
 lengths is first converted to a fraction by dividing by 4. The level $l$ and
 multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multiplier}, where $\log_2\left(\frac{n_d}{\mathrm{deepestDenominator}}\right)$ is the number of levels deeper we need to go.
+
 \begin{equation}
     \begin{split}
         f &= \frac{\mathrm{duration}}{4} \\
@@ -1395,6 +1401,7 @@ multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multip
     \end{split}
     \label{eq:duration_to_level_multiplier}
 \end{equation}
+\newpage
 
 
 
@@ -1403,7 +1410,7 @@ multiplier $m$ can then be found as in Equation~\ref{eq:duration_to_level_multip
 There are three main components to the repository: the Sonic Pi code, the data analysis code, and example Sonic Pi code. The structure of the \verb'sonic-pi' directory follows that of the main Sonic Pi source code\footnote{\url{https://github.com/sonic-pi-net/sonic-pi/tree/stable}}, which is not included here. All code in the repository was written by me, except where specified below.
 
 The following is the high-level structure of the repository:
-\vspace{2mm}
+\vspace{3mm}
 \dirtree{%
 .1 repository/.
 .2 sonic-pi/\DTcomment{Code for micro-timing implementation}.
@@ -1531,7 +1538,7 @@ to score each sample on how well it fit the style, focusing on the timing.
 
 Significant results were obtained for the waltz section, however participants
 struggled more with the jembe section. Despite this, an expert in the Malian
-jembe style provided comments supporting the success of the implementation. Section~\ref{user_study_discussion} discusses the results in more detail.
+jembe style provided comments supporting the success of the implementation.
 
 
 \subsection{Method} \label{user_study_method}
@@ -1879,7 +1886,7 @@ Manjanin with the data-derived micro-timing (Appendix~\ref{appendix_code_manjani
 useful advice, Rainer Polak also gave an expert opinion on the full recording,
 describing it as ``realistic and beautiful''. Therefore, despite the unfamiliar
 participants in the study struggling to identify the expected pattern, I conclude that the implementation can successfully produce realistic music.
-\newpage
+\pagebreak
 
 
 
@@ -1984,22 +1991,7 @@ The results of this were significant for the waltz style, which demonstrated my
 project's success in achieving this. I also received feedback from an expert in
 jembe music, who described the results as ``realistic and beautiful''.
 
-
-
-\section{Lessons learnt} \label{lessons_learnt}
-
-This project has given me the opportunity to develop my understanding of areas
-of computer science such as data science, distributed systems, and computer music. I have also learnt a lot about micro-timing in music, the jembe
-style of music, and the theory of metre.
-
-One thing I would do differently is to more carefully design the metre
-implementation before starting. This is because I had to make significant
-changes when I added the multi-threaded synchronisation, as this was an
-unforeseen problem to solve. Another possible improvement would be to
-use a more consistent set of priming examples for the Viennese waltz in the user
-study (Section~\ref{priming}). The examples that were used exhibited different degrees of
-micro-timing, and a more coherent set would have improved the effectiveness of
-the priming.
+In summary, the original success criteria were to: represent micro-timing probability distributions, implement style-specific micro-timing, and conduct a user study. The achievements I have described fulfil these criteria and one extension.
 
 
 
@@ -2019,6 +2011,25 @@ deriving more accurate distributions.
 Finally, future work could also involve implementing a control within Sonic Pi
 to dynamically adjust the ``strength'' of the micro-timing, i.e.\ to transform the
 timing displacements between being style-specific and isochronous.
+
+
+
+\section{Lessons learnt} \label{lessons_learnt}
+
+This project has given me the opportunity to develop my understanding of areas
+of computer science such as data science, distributed systems, and computer music. I have also learnt a lot about micro-timing in music, the jembe
+style of music, and the theory of metre.
+
+One thing I would do differently is to more carefully design the metre
+implementation before starting. This is because I had to make significant
+changes when I added the multi-threaded synchronisation, as this was an
+unforeseen problem to solve. Another possible improvement would be to
+use a more consistent set of priming examples for the Viennese waltz in the user
+study (Section~\ref{priming}). The examples that were used exhibited different degrees of
+micro-timing, and a more coherent set would have improved the effectiveness of
+the priming.
+
+In conclusion, this project has been interesting and rewarding to work on, and I hope it can be a valuable contribution to Sonic Pi.
 
 
 
@@ -2052,6 +2063,7 @@ The second dataset is part of the Interpersonal Entrainment in Music Performance
 Data Collection \cite{polak2020,clayton2021} and consists of 15 recordings across three different pieces: `Manjanin', `Maraka', and `Woloso'. The recordings were made by Polak in Bamako in 2006/7. They feature performances by Drisa Kone, Sedu Balo, Madu Jakite, Antoine Traole, Isa Coulibaly, and Jeli Madi Kuyate. Each recording is between 2 and 6 minutes in length. The dataset can be accessed from \url{https://osf.io/m652x/}.
 
 For the jembe section of the user study, participants were primed on four recordings of jembe music (Section~\ref{priming}). The first two of these are Audio 1a and 1b from Polak \cite{polak2010}. These are 14-second loops of Cycle 178 from his 2006 recording of Manjanin. Audio 1b isolates the Jembe 1 part from Audio 1a. The third example was a 13-second loop of Cycles 17 and 18 from the same recording. I included this so participants could be shown an example at a slower tempo. The final example was the full recording of Manjanin, which lasted 5 minutes.
+\newpage
 
 
 
@@ -2449,6 +2461,7 @@ While not critical to the implementation, the data from \cite{jacoby2021} will b
 generate probability distributions for the case study piece of music. This is
 publicly available at \url{https://doi.org/10.17605/OSF.IO/8WYAV} but I have
 downloaded the data anyway.
+\newpage
 
 
 
